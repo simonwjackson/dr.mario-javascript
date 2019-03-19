@@ -5,16 +5,16 @@
 // http://creativecommons.org/licenses/by-nc-sa/3.0/us/
 
 // (function (_, document) {
-import * as _  from '//cdn.jsdelivr.net/npm/ramda@latest/es/index.js'
+import * as _ from '//cdn.jsdelivr.net/npm/ramda@latest/es/index.js'
 import * as utils from './utils.js'
 import * as withContext from './withContext.js'
 import createContext from './createContext.js'
 
-const context = createContext()
+const context = createContext({
+  arena: document.getElementById('canvas').getContext('2d')
+})
 
-let canvas = document.getElementById('canvas'),
-  arena = canvas.getContext('2d'),
-  games = [],
+let games = [],
   init,
   N = [
     [
@@ -42,11 +42,13 @@ const {
   stop,
   start,
   draw,
+  drawVirus,
   toggle
 } = _.evolve({
   stop: fn => () => withContext.stop(context)(fn),
   start: fn => () => withContext.start(context)(draw)(fn),
-  draw: fn => () => withContext.draw(context)(arena)(games)(fn),
+  draw: fn => () => withContext.draw(context)(games)(fn),
+  drawVirus: fn => () => withContext.drawVirus(context)(fn),
   toggle: fn => () =>
     withContext.toggle(context)(start)(stop)(display_text)(draw)(fn),
 }, utils)
@@ -118,20 +120,20 @@ function draw_path(arena, P) {
 }
 
 function draw_block(x, y, r, color, neighbor) {
-  arena.fillStyle = color
-  arena.beginPath()
-  arena.save()
-  arena.translate(x + r / 2, y + r / 2)
-  arena.scale(r / 2, r / 2)
+  context.get(['arena']).fillStyle = color
+  context.get(['arena']).beginPath()
+  context.get(['arena']).save()
+  context.get(['arena']).translate(x + r / 2, y + r / 2)
+  context.get(['arena']).scale(r / 2, r / 2)
   if (neighbor && neighbor !== 0) {
-    arena.rotate((+neighbor - 1) * Math.PI * 2 / 4)
-    draw_path(arena, hpill)
+    context.get(['arena']).rotate((+neighbor - 1) * Math.PI * 2 / 4)
+    draw_path(context.get(['arena']), hpill)
   }
   else {
-    draw_path(arena, pill)
+    draw_path(context.get(['arena']), pill)
   }
-  arena.fill()
-  arena.restore()
+  context.get(['arena']).fill()
+  context.get(['arena']).restore()
 }
 
 Block.prototype.draw = function (blocksize) {
@@ -188,24 +190,6 @@ Game.prototype.flip = function () {
   }
 }
 
-function draw_virus(i, j, blocksize) {
-  arena.save()
-  arena.translate((i + 1 / 2) * blocksize, (j + 1 / 2) * blocksize)
-  //arena.scale(blocksize, blocksize);
-  arena.strokeStyle = '#000000'
-  arena.fillStyle = '#000000'
-  arena.beginPath()
-  arena.arc(3, -1, blocksize / 9, 0, Math.PI * 2, true)
-  arena.fill()
-  arena.beginPath()
-  arena.arc(-3, -1, blocksize / 9, 0, Math.PI * 2, true)
-  arena.fill()
-  arena.beginPath()
-  arena.arc(0, 6, blocksize / 9, 0, Math.PI, true)
-  arena.fill()
-  arena.restore()
-}
-
 Game.prototype.draw = function () {
   let i, j
   for (i = 0; i < this.x; i++)
@@ -214,35 +198,35 @@ Game.prototype.draw = function () {
         continue
 
       if (this.state[i][j] === -1)
-        arena.fillStyle = context.get(['colors'])[0]
+        context.get(['arena']).fillStyle = context.get(['colors'])[0]
 
       draw_block(i * context.get(['blocksize']), j * context.get(['blocksize']), context.get(['blocksize']), context.get(['colors'])[this.state[i][j]], this.neighbors[i][j])
-      //arena.fillRect(i * context.get(['blocksize']), j * context.get(['blocksize']), context.get(['blocksize']), context.get(['blocksize']));
+      //context.get(['arena']).fillRect(i * context.get(['blocksize']), j * context.get(['blocksize']), context.get(['blocksize']), context.get(['blocksize']));
       if (this.initial[i][j] === 1)
-        draw_virus(i, j, context.get(['blocksize']))
+        drawVirus(context.get(['arena']))(i)(j)(context.get(['blocksize']))
 
     }
 
   for (i = 0; i < this.falling.length; i++)
     this.falling[i].draw(context.get(['blocksize']))
 
-  arena.strokeRect(0, 0, this.x * context.get(['blocksize']), this.y * context.get(['blocksize']))
+  context.get(['arena']).strokeRect(0, 0, this.x * context.get(['blocksize']), this.y * context.get(['blocksize']))
   this.draw_chrome()
   this.display_messages()
 }
 
 Game.prototype.draw_chrome = function (level) {
-  arena.fillStyle = '#000000'
-  arena.font = '10pt helvetica'
-  arena.textalign = 'left'
-  arena.fillText('Virus: ' + this.virus, 0, this.y * context.get(['blocksize']) + 20)
-  arena.fillText('Wins: ' + wins[this.index], 150, this.y * context.get(['blocksize']) + 20)
-  arena.fillText('Next: ', 45, -10)
-  arena.save()
-  arena.translate(context.get(['blocksize']) * (Math.floor(this.x / 2) - 1), -25)
+  context.get(['arena']).fillStyle = '#000000'
+  context.get(['arena']).font = '10pt helvetica'
+  context.get(['arena']).textalign = 'left'
+  context.get(['arena']).fillText('Virus: ' + this.virus, 0, this.y * context.get(['blocksize']) + 20)
+  context.get(['arena']).fillText('Wins: ' + wins[this.index], 150, this.y * context.get(['blocksize']) + 20)
+  context.get(['arena']).fillText('Next: ', 45, -10)
+  context.get(['arena']).save()
+  context.get(['arena']).translate(context.get(['blocksize']) * (Math.floor(this.x / 2) - 1), -25)
   draw_block(0, 0, context.get(['blocksize']), context.get(['colors'])[blocks[this.blocks_index]], 2)
   draw_block(context.get(['blocksize']), 0, context.get(['blocksize']), context.get(['colors'])[blocks[this.blocks_index + 1]], 4)
-  arena.restore()
+  context.get(['arena']).restore()
 }
 
 Game.prototype.line_test = function (ist, jst) {
@@ -617,10 +601,10 @@ Game.prototype.move = function (dir) {
 
 Game.prototype.display_messages = function () {
   if (this.messages.length !== 0) {
-    arena.fillStyle = '#000000'
-    arena.font = '20pt helvetica'
-    arena.textAlign = 'center'
-    arena.fillText(this.messages.splice(0, 1), 100, 100)
+    context.get(['arena']).fillStyle = '#000000'
+    context.get(['arena']).font = '20pt helvetica'
+    context.get(['arena']).textAlign = 'center'
+    context.get(['arena']).fillText(this.messages.splice(0, 1), 100, 100)
   }
 }
 

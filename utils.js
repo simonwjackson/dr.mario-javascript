@@ -23,3 +23,21 @@ export const draw = _.curry((arena, games, { width, height, background }) => {
     arena.restore()
   }, games)
 })
+
+export const drawVirus = arena => i => j => blocksize => {
+  arena.save()
+  arena.translate((i + 1 / 2) * blocksize, (j + 1 / 2) * blocksize)
+  //arena.scale(blocksize, blocksize);
+  arena.strokeStyle = '#000000'
+  arena.fillStyle = '#000000'
+  arena.beginPath()
+  arena.arc(3, -1, blocksize / 9, 0, Math.PI * 2, true)
+  arena.fill()
+  arena.beginPath()
+  arena.arc(-3, -1, blocksize / 9, 0, Math.PI * 2, true)
+  arena.fill()
+  arena.beginPath()
+  arena.arc(0, 6, blocksize / 9, 0, Math.PI, true)
+  arena.fill()
+  arena.restore()
+}

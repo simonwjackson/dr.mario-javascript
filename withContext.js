@@ -6,12 +6,15 @@ export const stop = ({ set, get }) => fn =>
 export const start = ({ set, get }) => draw => fn =>
   set(['interval'], fn(get(['FPS']), draw))
 
-export const draw = ({ get }) => arena => games => fn =>
-  fn(arena, games, {
+export const draw = ({ get }) => games => fn =>
+  fn(get(['arena']), games, {
     width: get(['width']),
     height: get(['height']),
     background: get(['background']),
   })
+
+export const drawVirus = ({ get }) => fn =>
+  fn(get(['arena']))
 
 export const toggle = ({ get }) => start => stop => display_text => draw =>
   fn =>

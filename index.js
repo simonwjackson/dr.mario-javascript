@@ -7,7 +7,7 @@
 (function (_, document) {
   const mapI = _.addIndex(_.map)
 
-  var canvas = document.getElementById('canvas'),
+  let canvas = document.getElementById('canvas'),
     arena = canvas.getContext('2d'),
     games = [],
     colors = ['#000000', '#dfb700', '#0000fc', '#cc0000'],
@@ -131,7 +131,7 @@
     this.speed = speed || 20
   }
 
-  var R = 0.3,
+  let R = 0.3,
     hpill = [
       [-1, -1],
       [-1, 1 - R],
@@ -151,11 +151,10 @@
       [1 - R, -1]
     ]
 
-  function draw_path(P) {
-    var i
+  function draw_path(arena, P) {
     arena.beginPath()
     arena.moveTo(P[0][0], P[0][1])
-    for (i = 1, l = P.length; i < l; i++)
+    for (let i = 1, l = P.length; i < l; i++)
       arena.lineTo(P[i][0], P[i][1])
 
     arena.lineTo(P[0][0], P[0][1])
@@ -169,17 +168,17 @@
     arena.scale(r / 2, r / 2)
     if (neighbor && neighbor !== 0) {
       arena.rotate((+neighbor - 1) * Math.PI * 2 / 4)
-      draw_path(hpill)
+      draw_path(arena, hpill)
     }
     else {
-      draw_path(pill)
+      draw_path(arena, pill)
     }
     arena.fill()
     arena.restore()
   }
 
   Block.prototype.draw = function (blocksize) {
-    var i, j
+    let i, j
     for (i = 0; i < this.a.length; i++)
       for (j = 0; j < this.a[0].length; j++) {
         if (this.a[i][j] === 0)
@@ -193,7 +192,7 @@
   //Matrix operations
 
   function copy(a) {
-    var n = [],
+    let n = [],
       i, j
     for (i = 0; i < a.length; i++) {
       n[i] = []
@@ -205,7 +204,7 @@
   }
 
   function eq(a, b) {
-    var i, j
+    let i, j
     for (i = 0; i < a.length; i++)
       for (j = 0; j < a[0].length; j++)
         if (a[i][j] !== b[i][j])
@@ -215,7 +214,7 @@
   }
 
   function flip2by2(a) {
-    var t = a[0][0]
+    let t = a[0][0]
     a[0][0] = a[0][1]
     a[0][1] = a[1][1]
     a[1][1] = a[1][0]
@@ -223,7 +222,7 @@
   }
 
   Game.prototype.flip = function () {
-    var t, obj = this.movable,
+    let t, obj = this.movable,
       a = copy(obj.a)
     flip2by2(a)
     if (!this.collision(a, obj.x, obj.y)) {
@@ -251,7 +250,7 @@
   }
 
   Game.prototype.draw = function () {
-    var i, j
+    let i, j
     for (i = 0; i < this.x; i++)
       for (j = 0; j < this.y; j++) {
         if (this.state[i][j] === 0)
@@ -290,7 +289,7 @@
   }
 
   Game.prototype.line_test = function (ist, jst) {
-    var col, i = ist,
+    let col, i = ist,
       j = jst - 1
     if (j >= 0 && this.state[i][j] !== 0) {
       while (j > 0 && this.state[i][j] === this.state[i][j - 1])
@@ -314,7 +313,7 @@
   }
 
   Game.prototype.init_state = function (level) {
-    var i, j, n
+    let i, j, n
     this.virus = 0
     for (i = 0; i < this.x; i++) {
       this.state[i] = []
@@ -343,7 +342,7 @@
   }
 
   Game.prototype.tick = function () {
-    var i, obj, to_be_removed = []
+    let i, obj, to_be_removed = []
     for (i = 0; i < this.falling.length; i++) {
       obj = this.falling[i]
       if ((this.ticks % obj.speed) === 0)
@@ -381,7 +380,7 @@
   }
 
   Game.prototype.next_punish = function () {
-    var L = this.punish_list.splice(0, 1)[0],
+    let L = this.punish_list.splice(0, 1)[0],
       pos, o, i
     switch (L.length) {
     case 2:
@@ -420,7 +419,7 @@
   }
 
   Game.prototype.collision = function (a, x, y) {
-    var i, j
+    let i, j
     for (i = 0; i < a.length; i++)
       for (j = 0; j < a[0].length; j++) {
         if (y + j < 0)
@@ -435,7 +434,7 @@
   }
 
   Game.prototype.copy = function (obj) {
-    var i, j, a = obj.a,
+    let i, j, a = obj.a,
       x = obj.x,
       y = obj.y,
       newones = []
@@ -483,7 +482,7 @@
   }
 
   Game.prototype.mark = function (ist, jst) {
-    var k, col = this.state[ist][jst],
+    let k, col = this.state[ist][jst],
       cd = 0,
       cu = 0,
       cl = 0,
@@ -537,7 +536,7 @@
   }
 
   Game.prototype.orphans = function () {
-    var i, j, n, y, x, new_block
+    let i, j, n, y, x, new_block
     for (i = 0; i < this.x; i++)
       for (j = this.y - 1; j >= 0; j--) {
         if (this.initial[i][j] === 1 || this.state[i][j] === 0 || this.state[i][j] === -1)
@@ -585,7 +584,7 @@
   }
 
   Game.prototype.delmarked = function () {
-    var i, j, x, y, n
+    let i, j, x, y, n
     for (i = 0; i < this.x; i++)
       for (j = 0; j < this.y; j++)
         if (this.state[i][j] === -1) {
@@ -599,7 +598,7 @@
   }
 
   function onetrue(l) {
-    var i = 0
+    let i = 0
     while (i < l.length) {
       if (l[i])
         return true
@@ -610,7 +609,7 @@
   }
 
   Game.prototype.dropdown = function (obj) {
-    var newones, that = this
+    let newones, that = this
     if (!this.collision(obj.a, obj.x, obj.y + 1)) {
       obj.y += 1
       return false
@@ -631,7 +630,7 @@
   }
 
   Game.prototype.move = function (dir) {
-    var i, j, x, y, pos, obj, good, a
+    let i, j, x, y, pos, obj, good, a
     if (this.movable) {
       obj = this.movable
       a = obj.a
@@ -673,7 +672,7 @@
   }
 
   function display_text(game, text) {
-    var i
+    let i
     if (game === 'all')
       for (i = 0; i < games.length; i++)
         games[i].add_message(text)
@@ -686,14 +685,14 @@
   const isPaused = _.isNil
 
   window.addEventListener('keypress', function (e) {
-    var s = String.fromCharCode(e.which)
+    let s = String.fromCharCode(e.which)
     if (e.which === 32)
       toggle()
 
     const keyP = _.when(_.equals('p'))
     keyP(toggle, s)
 
-    var game = (init === two_p_init || init === single_with_bot_init) ? 1 : 0
+    let game = (init === two_p_init || init === single_with_bot_init) ? 1 : 0
     if (s === '4' || s === 'j')
       games[game].move('left')
 
@@ -766,7 +765,7 @@
   }
 
   function two_p_init(speed, level) {
-    var i
+    let i
     games = []
     games.push(new Game(10, 16, speed || 8, level || 10, 0))
     games.push(new Game(10, 16, speed || 8, level || 10, 1))
@@ -775,7 +774,7 @@
   }
 
   Game.prototype.game_over = function () {
-    var i = this.index,
+    let i = this.index,
       other = (i + 1) % 2
     stop(context)
     display_text(i, 'You lose')
@@ -787,7 +786,7 @@
   }
 
   Game.prototype.victory = function () {
-    var i = this.index,
+    let i = this.index,
       other = (i + 1) % 2
     stop(context)
     display_text(i, 'You win')
@@ -803,7 +802,7 @@
   }
 
   Game.prototype.set_punish = function (colors_list) {
-    var i
+    let i
     if (games.length === 1)
       return
 
@@ -817,7 +816,7 @@
   }
 
   function single_init(speed, level) {
-    var i
+    let i
     games = []
     games.push(new Game(10, 16, speed || 8, level || 1, 0))
     init_blocks()
@@ -844,7 +843,7 @@
   }
 
   BotGame.prototype.tick = function () {
-    var t
+    let t
     this.game.tick()
     // if there is movable and no goal or if there is a movable but the bot's movable is old
     if (this.game.movable && (!this.goal || this.movable !== this.game.movable)) {
@@ -897,7 +896,7 @@
 
   //input state & falling state, output: desired position and rotation
   function random_algo(state, drop_state) {
-    var x = state.length,
+    let x = state.length,
       y = state[0].length,
       new_state = copy(drop_state),
       i, l
@@ -908,7 +907,7 @@
   }
 
   function better_algo(state, drop_state) {
-    var stateinfo = analyze_state(state),
+    let stateinfo = analyze_state(state),
       top_color = stateinfo.tops,
       heights = stateinfo.heights,
       colors = get_drop_colors(drop_state),
@@ -939,7 +938,7 @@
 
   //assume possitive L
   function max(L) {
-    var l = L.length,
+    let l = L.length,
       i, best = -1,
       besti = 0
     for (i = 0; i < l; i++)
@@ -955,7 +954,7 @@
   }
 
   function pair_in_list(p, stateinfo) {
-    var i, s, l = stateinfo.tops.length,
+    let i, s, l = stateinfo.tops.length,
       offset = Math.floor(l / 2)
     for (i = 0; i < l - 1; i++) {
       s = (i + offset) % l
@@ -967,7 +966,7 @@
   }
 
   function single_in_list(c, stateinfo) {
-    var i, s, l = stateinfo.tops.length,
+    let i, s, l = stateinfo.tops.length,
       offset = Math.floor(l / 4),
       besth = 0,
       x = -1
@@ -982,7 +981,7 @@
   }
 
   function analyze_state(state) {
-    var i, tops = [],
+    let i, tops = [],
       heights = [],
       t
     for (i = 0; i < state.length; i++) {
@@ -1000,7 +999,7 @@
   }
 
   function get_drop_colors(drop_state) {
-    var n = [],
+    let n = [],
       i, j, a = drop_state
     for (i = 0; i < a.length; i++)
       for (j = 0; j < a[0].length; j++)
@@ -1011,7 +1010,7 @@
   }
 
   function inList(a, L, eq) {
-    var i
+    let i
     for (i = 0; i < L.length; i++)
       if (eq(L[i], a))
         return true
@@ -1021,7 +1020,7 @@
 
   function set_drop_state(goalx, current_state, colors, orientation) {
     //console.log('goal ',goalx, ' ', orientation);
-    var i, possible_states = [],
+    let i, possible_states = [],
       a = copy(current_state),
       goal
     for (i = 0; i < 4; i++) {

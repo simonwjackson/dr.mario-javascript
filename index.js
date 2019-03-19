@@ -6,7 +6,7 @@
 
 (function (_) {
   var canvas = document.getElementById('canvas'),
-    ctx = canvas.getContext('2d'),
+    arena = canvas.getContext('2d'),
     games = [],
     colors = ['#000000', '#dfb700', '#0000fc', '#cc0000'],
     init,
@@ -32,40 +32,51 @@
     COLORS = 3,
     wins = [0, 0]
 
-  function draw() {
-    ctx.clearRect(0, 0, 500, 600)
-    ctx.fillStyle = '#ffffff'
-    ctx.fillRect(0, 0, 500, 600)
-    games.forEach(function (game, index) {
-      ctx.save()
-      ctx.translate(30 + index * 240, 30)
-      game.tick()
-      game.draw()
-      ctx.restore()
-    })
-  }
-
   const context = {
     state: {
       FPS: 24,
-      interval: undefined
+      interval: undefined,
+      width: 500,
+      height: 600,
+      background: '#fff'
     },
     setState: _.curry((path, data) => {
       context.state = _.assocPath(path, data, context.state)
     })
   }
+  const mapI = _.addIndex(_.map)
 
   const {
     stop,
-    start
+    start,
+    draw
   } = _.evolve({
     stop: fn => () =>
       context.setState(['interval'], fn(context.state.interval)),
     start: fn => () =>
-      context.setState(['interval'], fn(context.state.FPS, draw))
+      context.setState(['interval'], fn(context.state.FPS, draw)),
+    draw: fn => () =>
+      fn(arena, games, {
+        width: context.state.width,
+        height: context.state.height,
+        background: context.state.background,
+      })
   }, {
     stop: interval => clearInterval(interval),
-    start: _.curry((FPS, draw) => setInterval(draw, 1000 / context.state.FPS)),
+    start: _.curry((FPS, draw) => setInterval(draw, 1000 / FPS)),
+    draw: _.curry((arena, games, { width, height, background }) => {
+      arena.clearRect(0, 0, width, height)
+      arena.fillStyle = background
+      arena.fillRect(0, 0, width, height)
+
+      mapI((game, index) => {
+        arena.save()
+        arena.translate(30 + index * 240, 30)
+        game.tick()
+        game.draw()
+        arena.restore()
+      }, games)
+    })
   })
 
   function Game(x, y, speed, level, index) {
@@ -128,29 +139,29 @@
 
   function draw_path(P) {
     var i
-    ctx.beginPath()
-    ctx.moveTo(P[0][0], P[0][1])
+    arena.beginPath()
+    arena.moveTo(P[0][0], P[0][1])
     for (i = 1, l = P.length; i < l; i++)
-      ctx.lineTo(P[i][0], P[i][1])
+      arena.lineTo(P[i][0], P[i][1])
 
-    ctx.lineTo(P[0][0], P[0][1])
+    arena.lineTo(P[0][0], P[0][1])
   }
 
   function draw_block(x, y, r, color, neighbor) {
-    ctx.fillStyle = color
-    ctx.beginPath()
-    ctx.save()
-    ctx.translate(x + r / 2, y + r / 2)
-    ctx.scale(r / 2, r / 2)
+    arena.fillStyle = color
+    arena.beginPath()
+    arena.save()
+    arena.translate(x + r / 2, y + r / 2)
+    arena.scale(r / 2, r / 2)
     if (neighbor && neighbor !== 0) {
-      ctx.rotate((+neighbor - 1) * Math.PI * 2 / 4)
+      arena.rotate((+neighbor - 1) * Math.PI * 2 / 4)
       draw_path(hpill)
     }
     else {
       draw_path(pill)
     }
-    ctx.fill()
-    ctx.restore()
+    arena.fill()
+    arena.restore()
   }
 
   Block.prototype.draw = function (blocksize) {
@@ -208,21 +219,21 @@
   }
 
   function draw_virus(i, j, blocksize) {
-    ctx.save()
-    ctx.translate((i + 1 / 2) * blocksize, (j + 1 / 2) * blocksize)
-    //ctx.scale(blocksize, blocksize);
-    ctx.strokeStyle = '#000000'
-    ctx.fillStyle = '#000000'
-    ctx.beginPath()
-    ctx.arc(3, -1, blocksize / 9, 0, Math.PI * 2, true)
-    ctx.fill()
-    ctx.beginPath()
-    ctx.arc(-3, -1, blocksize / 9, 0, Math.PI * 2, true)
-    ctx.fill()
-    ctx.beginPath()
-    ctx.arc(0, 6, blocksize / 9, 0, Math.PI, true)
-    ctx.fill()
-    ctx.restore()
+    arena.save()
+    arena.translate((i + 1 / 2) * blocksize, (j + 1 / 2) * blocksize)
+    //arena.scale(blocksize, blocksize);
+    arena.strokeStyle = '#000000'
+    arena.fillStyle = '#000000'
+    arena.beginPath()
+    arena.arc(3, -1, blocksize / 9, 0, Math.PI * 2, true)
+    arena.fill()
+    arena.beginPath()
+    arena.arc(-3, -1, blocksize / 9, 0, Math.PI * 2, true)
+    arena.fill()
+    arena.beginPath()
+    arena.arc(0, 6, blocksize / 9, 0, Math.PI, true)
+    arena.fill()
+    arena.restore()
   }
 
   Game.prototype.draw = function () {
@@ -233,10 +244,10 @@
           continue
 
         if (this.state[i][j] === -1)
-          ctx.fillStyle = colors[0]
+          arena.fillStyle = colors[0]
 
         draw_block(i * this.blocksize, j * this.blocksize, this.blocksize, colors[this.state[i][j]], this.neighbors[i][j])
-        //ctx.fillRect(i * this.blocksize, j * this.blocksize, this.blocksize, this.blocksize);
+        //arena.fillRect(i * this.blocksize, j * this.blocksize, this.blocksize, this.blocksize);
         if (this.initial[i][j] === 1)
           draw_virus(i, j, this.blocksize)
 
@@ -245,23 +256,23 @@
     for (i = 0; i < this.falling.length; i++)
       this.falling[i].draw(this.blocksize)
 
-    ctx.strokeRect(0, 0, this.x * this.blocksize, this.y * this.blocksize)
+    arena.strokeRect(0, 0, this.x * this.blocksize, this.y * this.blocksize)
     this.draw_chrome()
     this.display_messages()
   }
 
   Game.prototype.draw_chrome = function (level) {
-    ctx.fillStyle = '#000000'
-    ctx.font = '10pt helvetica'
-    ctx.textalign = 'left'
-    ctx.fillText('Virus: ' + this.virus, 0, this.y * this.blocksize + 20)
-    ctx.fillText('Wins: ' + wins[this.index], 150, this.y * this.blocksize + 20)
-    ctx.fillText('Next: ', 45, -10)
-    ctx.save()
-    ctx.translate(this.blocksize * (Math.floor(this.x / 2) - 1), -25)
+    arena.fillStyle = '#000000'
+    arena.font = '10pt helvetica'
+    arena.textalign = 'left'
+    arena.fillText('Virus: ' + this.virus, 0, this.y * this.blocksize + 20)
+    arena.fillText('Wins: ' + wins[this.index], 150, this.y * this.blocksize + 20)
+    arena.fillText('Next: ', 45, -10)
+    arena.save()
+    arena.translate(this.blocksize * (Math.floor(this.x / 2) - 1), -25)
     draw_block(0, 0, this.blocksize, colors[blocks[this.blocks_index]], 2)
     draw_block(this.blocksize, 0, this.blocksize, colors[blocks[this.blocks_index + 1]], 4)
-    ctx.restore()
+    arena.restore()
   }
 
   Game.prototype.line_test = function (ist, jst) {
@@ -636,10 +647,10 @@
 
   Game.prototype.display_messages = function () {
     if (this.messages.length !== 0) {
-      ctx.fillStyle = '#000000'
-      ctx.font = '20pt helvetica'
-      ctx.textAlign = 'center'
-      ctx.fillText(this.messages.splice(0, 1), 100, 100)
+      arena.fillStyle = '#000000'
+      arena.font = '20pt helvetica'
+      arena.textAlign = 'center'
+      arena.fillText(this.messages.splice(0, 1), 100, 100)
     }
   }
 

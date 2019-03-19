@@ -4,7 +4,9 @@
 // under BY-NC-SA CC license
 // http://creativecommons.org/licenses/by-nc-sa/3.0/us/
 
-(function (_) {
+(function (_, document) {
+  const mapI = _.addIndex(_.map)
+
   var canvas = document.getElementById('canvas'),
     arena = canvas.getContext('2d'),
     games = [],
@@ -45,12 +47,12 @@
       context.state = _.assocPath(path, data, context.state)
     })
   }
-  const mapI = _.addIndex(_.map)
 
   const {
     stop,
     start,
-    draw
+    draw,
+    toggle
   } = _.evolve({
     stop: fn => () =>
       context.setState(['interval'], fn(context.state.interval)),
@@ -61,10 +63,21 @@
         width: context.state.width,
         height: context.state.height,
         background: context.state.background,
-      })
+      }),
+    toggle: fn => () =>
+      fn(start, () => {
+        stop()
+        display_text('all', 'GAME PAUSED')
+        draw()
+      }, context.state.interval)
   }, {
     stop: interval => clearInterval(interval),
     start: _.curry((FPS, draw) => setInterval(draw, 1000 / FPS)),
+    toggle: _.curry((on, off, paused) => _.ifElse(
+      isPaused,
+      on,
+      off
+    )(paused)),
     draw: _.curry((arena, games, { width, height, background }) => {
       arena.clearRect(0, 0, width, height)
       arena.fillStyle = background
@@ -659,8 +672,6 @@
   }
 
   function display_text(game, text) {
-    console.log(game, i)
-
     var i
     if (game === 'all')
       for (i = 0; i < games.length; i++)
@@ -673,25 +684,14 @@
 
   const isPaused = _.isNil
 
-  const toggle = _.ifElse(
-    isPaused,
-    start,
-    () => {
-      stop(context)
-      // TODO: separate display from core
-      display_text('all', 'GAME PAUSED')
-      draw()
-      context.state.interval = undefined
-    }
-  )
-
   window.addEventListener('keypress', function (e) {
     var s = String.fromCharCode(e.which)
     if (e.which === 32)
       toggle(context.state.interval)
 
     const keyP = _.when(_.equals('p'))
-    keyP(_.partial(toggle, [context.state.interval]), s)
+    // keyP(_.partial(toggle, [context.state.interval]), s)
+    keyP(toggle, s)
 
     var game = (init === two_p_init || init === single_with_bot_init) ? 1 : 0
     if (s === '4' || s === 'j')
@@ -1067,4 +1067,4 @@
   init()
   start()
   toggle(context.state.interval)
-}(R))
+}(R, document))

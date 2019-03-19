@@ -1,0 +1,28 @@
+{
+  "name": "dr.mario-javascript",
+  "version": "1.0.0",
+  "description": "== Info [[http://en.wikipedia.org/wiki/Dr._Mario_(video_game)|Dr. Mario]] is a tetris-like game made by Nintendo.",
+  "main": "drmario.js",
+  "scripts": {
+    "dev": "browser-sync start -s -f . --no-notify --host $LOCAL_IP --port 9000"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/simonwjackson/dr.mario-javascript.git"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "bugs": {
+    "url": "https://github.com/simonwjackson/dr.mario-javascript/issues"
+  },
+  "homepage": "https://github.com/simonwjackson/dr.mario-javascript#readme",
+  "dependencies": {
+    "eslint": "^5.15.3",
+    "ramda": "^0.26.1"
+  },
+  "devDependencies": {
+    "eslint-config-simonwjackson": "git+ssh://git@github.com/simonwjackson/eslint-config-simonwjackson.git",
+    "browser-sync": "^2.26.3"
+  }
+}

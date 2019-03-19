@@ -811,11 +811,10 @@
     init_blocks()
   }
 
-  function init_blocks() {
-    for (i = 0; i < 10000; i++)
-      blocks.push(1 + Math.floor(Math.random() * COLORS))
-
-  }
+  const init_blocks = () =>
+    _.times(() =>
+      blocks.push(1 + Math.floor(Math.random() * COLORS)),
+    10000)
 
   // AI code
   function BotGame(game, algo, botspeed) {

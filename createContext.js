@@ -1,4 +1,4 @@
-import * as _  from '//cdn.jsdelivr.net/npm/ramda@latest/es/index.js'
+import * as _ from '//cdn.jsdelivr.net/npm/ramda@latest/es/index.js'
 
 export const createContext = (options = {}) => {
   let state = _.mergeDeepRight({
@@ -8,6 +8,7 @@ export const createContext = (options = {}) => {
     height: 600,
     background: '#fff',
     blocksize: 20,
+    colors: ['#000000', '#dfb700', '#0000fc', '#cc0000'],
   }, options)
 
   const get = path => _.path(path, state)

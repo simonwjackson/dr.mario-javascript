@@ -15,7 +15,6 @@ const context = createContext()
 let canvas = document.getElementById('canvas'),
   arena = canvas.getContext('2d'),
   games = [],
-  colors = ['#000000', '#dfb700', '#0000fc', '#cc0000'],
   init,
   N = [
     [
@@ -142,7 +141,7 @@ Block.prototype.draw = function (blocksize) {
       if (this.a[i][j] === 0)
         continue
 
-      draw_block((this.x + i) * blocksize, (this.y + j) * blocksize, blocksize, colors[this.a[i][j]], N[this.neighbors][i][j])
+      draw_block((this.x + i) * blocksize, (this.y + j) * blocksize, blocksize, context.get(['colors'])[this.a[i][j]], N[this.neighbors][i][j])
     }
 
 }
@@ -215,9 +214,9 @@ Game.prototype.draw = function () {
         continue
 
       if (this.state[i][j] === -1)
-        arena.fillStyle = colors[0]
+        arena.fillStyle = context.get(['colors'])[0]
 
-      draw_block(i * context.get(['blocksize']), j * context.get(['blocksize']), context.get(['blocksize']), colors[this.state[i][j]], this.neighbors[i][j])
+      draw_block(i * context.get(['blocksize']), j * context.get(['blocksize']), context.get(['blocksize']), context.get(['colors'])[this.state[i][j]], this.neighbors[i][j])
       //arena.fillRect(i * context.get(['blocksize']), j * context.get(['blocksize']), context.get(['blocksize']), context.get(['blocksize']));
       if (this.initial[i][j] === 1)
         draw_virus(i, j, context.get(['blocksize']))
@@ -241,8 +240,8 @@ Game.prototype.draw_chrome = function (level) {
   arena.fillText('Next: ', 45, -10)
   arena.save()
   arena.translate(context.get(['blocksize']) * (Math.floor(this.x / 2) - 1), -25)
-  draw_block(0, 0, context.get(['blocksize']), colors[blocks[this.blocks_index]], 2)
-  draw_block(context.get(['blocksize']), 0, context.get(['blocksize']), colors[blocks[this.blocks_index + 1]], 4)
+  draw_block(0, 0, context.get(['blocksize']), context.get(['colors'])[blocks[this.blocks_index]], 2)
+  draw_block(context.get(['blocksize']), 0, context.get(['blocksize']), context.get(['colors'])[blocks[this.blocks_index + 1]], 4)
   arena.restore()
 }
 
@@ -283,8 +282,8 @@ Game.prototype.init_state = function (level) {
         this.state[i][j] = this.initial[i][j] = 0
       }
       else {
-        this.state[i][j] = Math.floor(Math.random() * (colors.length + 1))
-        if (this.state[i][j] >= colors.length)
+        this.state[i][j] = Math.floor(Math.random() * (context.get(['colors']).length + 1))
+        if (this.state[i][j] >= context.get(['colors']).length)
           this.state[i][j] = 0
 
         if (this.state[i][j] !== 0) {

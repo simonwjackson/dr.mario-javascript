@@ -6,14 +6,14 @@
 
 (function (_) {
   const state = {
-    FPS: 24
+    FPS: 24,
+    interval: undefined
   }
 
   var canvas = document.getElementById('canvas'),
     ctx = canvas.getContext('2d'),
     games = [],
     colors = ['#000000', '#dfb700', '#0000fc', '#cc0000'],
-    interval,
     init,
     N = [
       [
@@ -629,13 +629,12 @@
     })
   }
 
-  function start() {
-    interval = setInterval(draw, 1000 / state.FPS)
-  }
+  const start = state =>
+    setInterval(draw, 1000 / state.FPS)
 
   function stop() {
-    clearInterval(interval)
-    interval = undefined
+    clearInterval(state.interval)
+    state.interval = undefined
   }
 
   function display_text(game, text) {
@@ -655,23 +654,23 @@
 
   const pause = _.ifElse(
     isPaused,
-    start,
+    () => state.interval = start(state),
     () => {
       stop()
       // TODO: separate display from core
       display_text('all', 'GAME PAUSED')
       draw()
-      interval = undefined
+      state.interval = undefined
     }
   )
 
   window.addEventListener('keypress', function (e) {
     var s = String.fromCharCode(e.which)
     if (e.which === 32)
-      pause(interval)
+      pause(state.interval)
 
     if (s === 'p')
-      pause(interval)
+      pause(state.interval)
 
     var game = (init === two_p_init || init === single_with_bot_init) ? 1 : 0
     if (s === '4' || s === 'j')
@@ -704,19 +703,19 @@
       stop()
       init = single_with_bot_init
       init()
-      start()
+      state.interval = start(state)
     }
     if (s === '=') {
       stop()
       init = two_p_init
       init()
-      start()
+      state.interval = start(state)
     }
     if (s === '[') {
       stop()
       init = single_init
       init()
-      start()
+      state.interval = start(state)
     }
     // DEBUGGING
     //    if (String.fromCharCode(e.charCode) === '1'){
@@ -1045,6 +1044,6 @@
   }
   init = single_init
   init()
-  start()
-  pause(interval)
+  state.interval = start(state)
+  pause(state.interval)
 }(R))

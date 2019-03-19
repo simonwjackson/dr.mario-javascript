@@ -5,9 +5,12 @@
 // http://creativecommons.org/licenses/by-nc-sa/3.0/us/
 
 (function (_) {
+  const state = {
+    FPS: 24
+  }
+
   var canvas = document.getElementById('canvas'),
     ctx = canvas.getContext('2d'),
-    FPS = 24,
     games = [],
     colors = ['#000000', '#dfb700', '#0000fc', '#cc0000'],
     interval,
@@ -627,7 +630,7 @@
   }
 
   function start() {
-    interval = setInterval(draw, 1000 / FPS)
+    interval = setInterval(draw, 1000 / state.FPS)
   }
 
   function stop() {
@@ -636,6 +639,8 @@
   }
 
   function display_text(game, text) {
+    console.log(game, i)
+
     var i
     if (game === 'all')
       for (i = 0; i < games.length; i++)

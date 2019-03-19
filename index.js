@@ -38,7 +38,8 @@
       interval: undefined,
       width: 500,
       height: 600,
-      background: '#fff'
+      background: '#fff',
+      blocksize: 20,
     },
     setState: _.curry((path, data) => {
       context.state = _.assocPath(path, data, context.state)
@@ -91,7 +92,6 @@
     this.blocks_index = 0
     this.speed = speed
     this.live = false
-    this.blocksize = 20
     this.init_state(level || 10)
     this.falling = []
     this.punish_list = []
@@ -246,17 +246,17 @@
         if (this.state[i][j] === -1)
           arena.fillStyle = colors[0]
 
-        draw_block(i * this.blocksize, j * this.blocksize, this.blocksize, colors[this.state[i][j]], this.neighbors[i][j])
-        //arena.fillRect(i * this.blocksize, j * this.blocksize, this.blocksize, this.blocksize);
+        draw_block(i * context.state.blocksize, j * context.state.blocksize, context.state.blocksize, colors[this.state[i][j]], this.neighbors[i][j])
+        //arena.fillRect(i * context.state.blocksize, j * context.state.blocksize, context.state.blocksize, context.state.blocksize);
         if (this.initial[i][j] === 1)
-          draw_virus(i, j, this.blocksize)
+          draw_virus(i, j, context.state.blocksize)
 
       }
 
     for (i = 0; i < this.falling.length; i++)
-      this.falling[i].draw(this.blocksize)
+      this.falling[i].draw(context.state.blocksize)
 
-    arena.strokeRect(0, 0, this.x * this.blocksize, this.y * this.blocksize)
+    arena.strokeRect(0, 0, this.x * context.state.blocksize, this.y * context.state.blocksize)
     this.draw_chrome()
     this.display_messages()
   }
@@ -265,13 +265,13 @@
     arena.fillStyle = '#000000'
     arena.font = '10pt helvetica'
     arena.textalign = 'left'
-    arena.fillText('Virus: ' + this.virus, 0, this.y * this.blocksize + 20)
-    arena.fillText('Wins: ' + wins[this.index], 150, this.y * this.blocksize + 20)
+    arena.fillText('Virus: ' + this.virus, 0, this.y * context.state.blocksize + 20)
+    arena.fillText('Wins: ' + wins[this.index], 150, this.y * context.state.blocksize + 20)
     arena.fillText('Next: ', 45, -10)
     arena.save()
-    arena.translate(this.blocksize * (Math.floor(this.x / 2) - 1), -25)
-    draw_block(0, 0, this.blocksize, colors[blocks[this.blocks_index]], 2)
-    draw_block(this.blocksize, 0, this.blocksize, colors[blocks[this.blocks_index + 1]], 4)
+    arena.translate(context.state.blocksize * (Math.floor(this.x / 2) - 1), -25)
+    draw_block(0, 0, context.state.blocksize, colors[blocks[this.blocks_index]], 2)
+    draw_block(context.state.blocksize, 0, context.state.blocksize, colors[blocks[this.blocks_index + 1]], 4)
     arena.restore()
   }
 

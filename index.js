@@ -806,16 +806,16 @@ BotGame.prototype.chase_goal = function () {
 }
 
 //input state & falling state, output: desired position and rotation
-function random_algo(state, drop_state) {
-  let x = state.length,
-    y = state[0].length,
-    new_state = copy(drop_state),
-    i, l
-  for (i = 0, l = Math.random() * 2; i < l; i++)
-    new_state = flip2by2(new_state)
+// function random_algo(state, drop_state) {
+//   let x = state.length,
+//     y = state[0].length,
+//     new_state = copy(drop_state),
+//     i, l
+//   for (i = 0, l = Math.random() * 2; i < l; i++)
+//     new_state = flip2by2(new_state)
 
-  return [Math.floor(Math.random() * x), new_state]
-}
+//   return [Math.floor(Math.random() * x), new_state]
+// }
 
 function better_algo(state, drop_state) {
   let stateinfo = analyze_state(state),

@@ -1,4 +1,4 @@
-export default (context, Block, blocks, N, direct, onetrue, stop, display_text, wins, init, game_to, games, drawBlock, drawVirus, copy, flip2by2) => {
+export default (context, Block, blocks, N, direct, onetrue, stop, display_text, wins, init, game_to, drawBlock, drawVirus, copy, flip2by2) => {
   function Game(x, y, speed, level, index) {
     this.index = index
     this.state = []
@@ -429,7 +429,7 @@ export default (context, Block, blocks, N, direct, onetrue, stop, display_text, 
       other = (i + 1) % 2
     stop(context)
     display_text(i, 'You lose')
-    if (games.length > 1) {
+    if (context.get(['games']).length > 1) {
       display_text(other, 'You win')
       wins[other] += 1
     }
@@ -441,7 +441,7 @@ export default (context, Block, blocks, N, direct, onetrue, stop, display_text, 
       other = (i + 1) % 2
     stop(context)
     display_text(i, 'You win')
-    if (games.length > 1)
+    if (context.get(['games']).length > 1)
       display_text(other, 'You lose')
 
     wins[i] += 1
@@ -454,15 +454,15 @@ export default (context, Block, blocks, N, direct, onetrue, stop, display_text, 
 
   Game.prototype.set_punish = function (colors_list) {
     let i
-    if (games.length === 1)
+    if (context.get(['games']).length === 1)
       return
 
     // hack this should be somewhere else
     if (this.index === undefined)
-      this.index = games.indexOf(this)
+      this.index = context.get(['games']).indexOf(this)
 
     i = this.index
-    game_to = games[(i + 1) % 2]
+    game_to = context.get(['games'])[(i + 1) % 2]
     game_to.get_punish(colors_list)
   }
 

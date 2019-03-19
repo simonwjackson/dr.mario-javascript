@@ -13,11 +13,11 @@ import MakeBlock from './Block.js'
 import MakeBotGame from './BotGame.js'
 
 const context = createContext({
-  arena: document.getElementById('canvas').getContext('2d')
+  arena: document.getElementById('canvas').getContext('2d'),
+  games: []
 })
 
-let games = [],
-  init,
+let init,
   N = [
     [
       [0, 2],
@@ -55,7 +55,7 @@ const {
 } = _.evolve({
   stop: fn => () => withContext.stop(context)(fn),
   start: fn => () => withContext.start(context)(draw)(fn),
-  draw: fn => () => withContext.draw(context)(games)(fn),
+  draw: fn => () => withContext.draw(context)(fn),
   drawVirus: fn => () => withContext.drawVirus(context)(fn),
   toggle: fn => () =>
     withContext.toggle(context)(start)(stop)(display_text)(draw)(fn),
@@ -111,16 +111,16 @@ init = single_init
 
 const BotGame = MakeBotGame(eq)
 const Block = MakeBlock(context, COLORS, drawBlock, N)
-const Game = MakeGame(context, Block, blocks, N, direct, onetrue, stop, display_text, wins, init, null, games, drawBlock, drawVirus, copy, flip2by2)
+const Game = MakeGame(context, Block, blocks, N, direct, onetrue, stop, display_text, wins, init, null, drawBlock, drawVirus, copy, flip2by2)
 
 function display_text(game, text) {
   let i
   if (game === 'all')
-    for (i = 0; i < games.length; i++)
-      games[i].add_message(text)
+    for (i = 0; i < context.get(['games']).length; i++)
+      context.get(['games'])[i].add_message(text)
 
   else
-    games[game].add_message(text)
+    context.get(['games'])[game].add_message(text)
 
 }
 
@@ -134,29 +134,29 @@ window.addEventListener('keypress', function (e) {
 
   let game = (init === two_p_init || init === single_with_bot_init) ? 1 : 0
   if (s === '4' || s === 'j')
-    games[game].move('left')
+    context.get(['games'])[game].move('left')
 
   if (s === '6' || s === 'l')
-    games[game].move('right')
+    context.get(['games'])[game].move('right')
 
   if (s === '5' || s === 'k')
-    games[game].start_fastdrop()
+    context.get(['games'])[game].start_fastdrop()
 
   if (s === '8' || s === 'i')
-    games[game].flip()
+    context.get(['games'])[game].flip()
 
   if (init === two_p_init) {
     if (s === 'a')
-      games[0].move('left')
+      context.get(['games'])[0].move('left')
 
     if (s === 'd')
-      games[0].move('right')
+      context.get(['games'])[0].move('right')
 
     if (s === 's')
-      games[0].start_fastdrop()
+      context.get(['games'])[0].start_fastdrop()
 
     if (s === 'w')
-      games[0].flip()
+      context.get(['games'])[0].flip()
 
   }
   if (s === '-') {
@@ -179,20 +179,20 @@ window.addEventListener('keypress', function (e) {
   }
   // DEBUGGING
   //    if (String.fromCharCode(e.charCode) === '1'){
-  //       games[0].movable.speed = 10000;
+  //       context.get(['games'])[0].movable.speed = 10000;
   //    }
   //    if (String.fromCharCode(e.charCode) === '2'){
-  //       games[1].movable.speed = 10000;
+  //       context.get(['games'])[1].movable.speed = 10000;
   //    }
   //    if (String.fromCharCode(e.charCode) === '3'){
-  //        punish(games[0],[2,1]);
+  //        punish(context.get(['games'])[0],[2,1]);
   //    }
   //    if (String.fromCharCode(e.charCode) === '4'){
   //        single_init(1);
-  //        games[0].falling.push(new Block(4, 2,games[0].speed,[[1]]));
-  //        games[0].falling.push(new Block(4, 1,games[0].speed,[[1]]));
-  //        games[0].falling.push(new Block(4, 0,games[0].speed,[[1]]));
-  //        games[0].falling.push(new Block(4,-1,games[0].speed,[[1]]));
+  //        context.get(['games'])[0].falling.push(new Block(4, 2,context.get(['games'])[0].speed,[[1]]));
+  //        context.get(['games'])[0].falling.push(new Block(4, 1,context.get(['games'])[0].speed,[[1]]));
+  //        context.get(['games'])[0].falling.push(new Block(4, 0,context.get(['games'])[0].speed,[[1]]));
+  //        context.get(['games'])[0].falling.push(new Block(4,-1,context.get(['games'])[0].speed,[[1]]));
   //    }
   //
   e.preventDefault()
@@ -204,34 +204,40 @@ function copy_game_state(game_from, game_to) {
   game_to.virus = game_from.virus; + 1
 }
 
+const appendBlock = _.bind(blocks.push, blocks)
+const createRandomBlocks =
+  _.times(() => 1 + Math.floor(Math.random() * COLORS))
+const initBlocks = _.compose(
+  _.map(appendBlock),
+  createRandomBlocks
+)
+
 function two_p_init(speed, level) {
   let i
-  games = []
-  games.push(new Game(10, 16, speed || 8, level || 10, 0))
-  games.push(new Game(10, 16, speed || 8, level || 10, 1))
-  copy_game_state(games[0], games[1])
-  init_blocks()
+  context.set(['games'], [])
+  context.get(['games']).push(new Game(10, 16, speed || 8, level || 10, 0))
+  context.get(['games']).push(new Game(10, 16, speed || 8, level || 10, 1))
+  copy_game_state(context.get(['games'])[0], context.get(['games'])[1])
+  initBlocks(10000)
 }
 
 function single_init(speed, level) {
   let i
-  games = []
-  games.push(new Game(10, 16, speed || 8, level || 1, 0))
-  init_blocks()
+  context.set(['games'], [])
+  context.get(['games']).push(new Game(10, 16, speed || 8, level || 1, 0))
+  initBlocks(10000)
 }
 
 function single_with_bot_init(speed, level) {
-  games = []
-  games.push(new BotGame(new Game(10, 16, speed || 8, level || 10, 0), better_algo))
-  games.push(new Game(10, 16, speed || 8, level || 10, 1))
-  copy_game_state(games[0].game, games[1])
-  init_blocks()
+  context.set(['games'], [])
+  context.get(['games']).push(new BotGame(new Game(10, 16, speed || 8, level || 10, 0), better_algo))
+  context.get(['games']).push(new Game(10, 16, speed || 8, level || 10, 1))
+  copy_game_state(context.get(['games'])[0].game, context.get(['games'])[1])
+  initBlocks(10000)
 }
 
-const init_blocks = () =>
-  _.times(() =>
-    blocks.push(1 + Math.floor(Math.random() * COLORS)),
-  10000)
+// const init_blocks =
+//   _.times(() => 1 + Math.floor(Math.random() * COLORS))
 
 // AI code
 

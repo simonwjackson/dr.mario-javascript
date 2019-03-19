@@ -75,3 +75,14 @@ export const flip2by2 = a => {
   b[1][0] = t
   return b
 }
+
+export const onetrue = l => {
+  let i = 0
+  while (i < l.length) {
+    if (l[i])
+      return true
+
+    i += 1
+  }
+  return false
+}

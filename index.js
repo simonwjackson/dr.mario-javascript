@@ -9,6 +9,8 @@ import * as utils from './utils.js'
 import * as withContext from './withContext.js'
 import createContext from './createContext.js'
 import MakeGame from './Game.js'
+import MakeBlock from './Block.js'
+import MakeBotGame from './BotGame.js'
 
 const context = createContext({
   arena: document.getElementById('canvas').getContext('2d')
@@ -47,7 +49,8 @@ const {
   // Matrix
   copy,
   eq,
-  flip2by2
+  flip2by2,
+  onetrue
 } = _.evolve({
   stop: fn => () => withContext.stop(context)(fn),
   start: fn => () => withContext.start(context)(draw)(fn),
@@ -105,48 +108,9 @@ const drawBlock = arena => (x, y, r, color, neighbor) => {
 
 init = single_init
 
+const BotGame = MakeBotGame(eq)
+const Block = MakeBlock(context, COLORS, drawBlock, N)
 const Game = MakeGame(context, Block, blocks, N, direct, onetrue, stop, display_text, wins, init, null, games, drawBlock, drawVirus, copy, flip2by2)
-
-function Block(x, y, speed, a) {
-  this.x = x
-  this.y = y
-  this.neighbors = 0
-  if (!a) {
-    this.a = [
-      [0, 0],
-      [0, 0]
-    ]
-    this.a[1][1] = 1 + Math.floor(Math.random() * COLORS)
-    this.a[0][1] = 1 + Math.floor(Math.random() * COLORS)
-  }
-  else {
-    this.a = a
-  }
-  this.speed = speed || 20
-}
-
-Block.prototype.draw = function (blocksize) {
-  let i, j
-  for (i = 0; i < this.a.length; i++)
-    for (j = 0; j < this.a[0].length; j++) {
-      if (this.a[i][j] === 0)
-        continue
-
-      drawBlock( context.get(['arena']) )((this.x + i) * blocksize, (this.y + j) * blocksize, blocksize, context.get(['colors'])[this.a[i][j]], N[this.neighbors][i][j])
-    }
-
-}
-
-function onetrue(l) {
-  let i = 0
-  while (i < l.length) {
-    if (l[i])
-      return true
-
-    i += 1
-  }
-  return false
-}
 
 function direct(x, y, n) {
   switch (n) {
@@ -284,11 +248,6 @@ const init_blocks = () =>
   10000)
 
 // AI code
-function BotGame(game, algo, botspeed) {
-  this.algo = algo
-  this.game = game
-  this.botspeed = botspeed || 5
-}
 
 //input state & falling state, output: desired position and rotation
 // function random_algo(state, drop_state) {
@@ -456,62 +415,9 @@ function set_drop_state(goalx, current_state, colors, orientation) {
       return [goalx, goal]
 
   }
-  //alert('error impossible state');
 }
 
-/* ********************** Bot Game *********************** */
-
-BotGame.prototype.tick = function () {
-  let t
-  this.game.tick()
-  // if there is movable and no goal or if there is a movable but the bot's movable is old
-  if (this.game.movable && (!this.goal || this.movable !== this.game.movable)) {
-    t = this.algo(this.game.state, this.game.movable.a)
-    this.goal = {
-      pos: t[0],
-      state: t[1]
-    }
-    this.movable = this.game.movable
-  }
-  if (this.game.ticks % this.botspeed === 0)
-    this.chase_goal()
-
-}
-
-BotGame.prototype.draw = function () {
-  this.game.draw()
-}
-
-BotGame.prototype.add_message = function (text) {
-  this.game.messages.push(text)
-}
-
-BotGame.prototype.get_punish = function (colors_list) {
-  this.game.get_punish(colors_list)
-}
-
-BotGame.prototype.chase_goal = function () {
-  if (!this.game.movable)
-    return
-
-  if (!eq(this.goal.state, this.game.movable.a)) {
-    this.game.flip()
-    return
-  }
-
-  if (this.goal.pos < this.game.movable.x) {
-    this.game.move('left')
-    return
-  }
-  if (this.goal.pos > this.game.movable.x) {
-    this.game.move('right')
-    return
-  }
-  if (!this.fast_drop) {
-    this.game.start_fastdrop()
-    return
-  }
-}
+/* ********************** init *********************** */
 
 init()
 start()

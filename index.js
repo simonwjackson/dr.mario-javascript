@@ -5,21 +5,6 @@
 // http://creativecommons.org/licenses/by-nc-sa/3.0/us/
 
 (function (_) {
-  let state = {
-    FPS: 24,
-    interval: undefined
-  }
-
-  const setState = _.curry((path, data) => {
-    state = _.assocPath(path, data, state)
-    console.log(state)
-  })
-
-  const context = {
-    state,
-    setState
-  }
-
   var canvas = document.getElementById('canvas'),
     ctx = canvas.getContext('2d'),
     games = [],
@@ -46,6 +31,42 @@
     blocks = [],
     COLORS = 3,
     wins = [0, 0]
+
+  function draw() {
+    ctx.clearRect(0, 0, 500, 600)
+    ctx.fillStyle = '#ffffff'
+    ctx.fillRect(0, 0, 500, 600)
+    games.forEach(function (game, index) {
+      ctx.save()
+      ctx.translate(30 + index * 240, 30)
+      game.tick()
+      game.draw()
+      ctx.restore()
+    })
+  }
+
+  const context = {
+    state: {
+      FPS: 24,
+      interval: undefined
+    },
+    setState: _.curry((path, data) => {
+      context.state = _.assocPath(path, data, context.state)
+    })
+  }
+
+  const {
+    stop,
+    start
+  } = _.evolve({
+    stop: fn => () =>
+      context.setState(['interval'], fn(context.state.interval)),
+    start: fn => () =>
+      context.setState(['interval'], fn(context.state.FPS, draw))
+  }, {
+    stop: interval => clearInterval(interval),
+    start: _.curry((FPS, draw) => setInterval(draw, 1000 / context.state.FPS)),
+  })
 
   function Game(x, y, speed, level, index) {
     this.index = index
@@ -626,27 +647,6 @@
     this.messages.push(text)
   }
 
-  function draw() {
-    ctx.clearRect(0, 0, 500, 600)
-    ctx.fillStyle = '#ffffff'
-    ctx.fillRect(0, 0, 500, 600)
-    games.forEach(function (game, index) {
-      ctx.save()
-      ctx.translate(30 + index * 240, 30)
-      game.tick()
-      game.draw()
-      ctx.restore()
-    })
-  }
-
-  const start = ({ state }) =>
-    setInterval(draw, 1000 / state.FPS)
-
-  function stop() {
-    clearInterval(state.interval)
-    state.interval = undefined
-  }
-
   function display_text(game, text) {
     console.log(game, i)
 
@@ -664,23 +664,23 @@
 
   const pause = _.ifElse(
     isPaused,
-    () => setState(['interval'], start(context)),
+    start,
     () => {
-      stop()
+      stop(context)
       // TODO: separate display from core
       display_text('all', 'GAME PAUSED')
       draw()
-      setState(['interval'], undefined)
+      context.state.interval = undefined
     }
   )
 
   window.addEventListener('keypress', function (e) {
     var s = String.fromCharCode(e.which)
     if (e.which === 32)
-      pause(state.interval)
+      pause(context.state.interval)
 
     if (s === 'p')
-      pause(state.interval)
+      pause(context.state.interval)
 
     var game = (init === two_p_init || init === single_with_bot_init) ? 1 : 0
     if (s === '4' || s === 'j')
@@ -710,22 +710,22 @@
 
     }
     if (s === '-') {
-      stop()
+      stop(context)
       init = single_with_bot_init
       init()
-      setState(['interval'], start(context))
+      start()
     }
     if (s === '=') {
-      stop()
+      stop(context)
       init = two_p_init
       init()
-      setState(['interval'], start(context))
+      start()
     }
     if (s === '[') {
-      stop()
+      stop(context)
       init = single_init
       init()
-      setState(['interval'], start(context))
+      start()
     }
     // DEBUGGING
     //    if (String.fromCharCode(e.charCode) === '1'){
@@ -766,7 +766,7 @@
   Game.prototype.game_over = function () {
     var i = this.index,
       other = (i + 1) % 2
-    stop()
+    stop(context)
     display_text(i, 'You lose')
     if (games.length > 1) {
       display_text(other, 'You win')
@@ -778,7 +778,7 @@
   Game.prototype.victory = function () {
     var i = this.index,
       other = (i + 1) % 2
-    stop()
+    stop(context)
     display_text(i, 'You win')
     if (games.length > 1)
       display_text(other, 'You lose')
@@ -820,10 +820,11 @@
     init_blocks()
   }
 
-  const init_blocks = () =>
-    _.times(() =>
-      blocks.push(1 + Math.floor(Math.random() * COLORS)),
-    10000)
+  function init_blocks() {
+    for (i = 0; i < 10000; i++)
+      blocks.push(1 + Math.floor(Math.random() * COLORS))
+
+  }
 
   // AI code
   function BotGame(game, algo, botspeed) {
@@ -1054,6 +1055,6 @@
   }
   init = single_init
   init()
-  setState(['interval'], start(context))
-  pause(state.interval)
+  start()
+  pause(context.state.interval)
 }(R))

@@ -50,7 +50,8 @@ const {
   copy,
   eq,
   flip2by2,
-  onetrue
+  onetrue,
+  direct
 } = _.evolve({
   stop: fn => () => withContext.stop(context)(fn),
   start: fn => () => withContext.start(context)(draw)(fn),
@@ -111,21 +112,6 @@ init = single_init
 const BotGame = MakeBotGame(eq)
 const Block = MakeBlock(context, COLORS, drawBlock, N)
 const Game = MakeGame(context, Block, blocks, N, direct, onetrue, stop, display_text, wins, init, null, games, drawBlock, drawVirus, copy, flip2by2)
-
-function direct(x, y, n) {
-  switch (n) {
-  case 0:
-    return [x, y]
-  case 1:
-    return [x, y - 1]
-  case 2:
-    return [x + 1, y]
-  case 3:
-    return [x, y + 1]
-  case 4:
-    return [x - 1, y]
-  }
-}
 
 function display_text(game, text) {
   let i

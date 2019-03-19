@@ -86,3 +86,18 @@ export const onetrue = l => {
   }
   return false
 }
+
+export const direct = (x, y, n) => {
+  switch (n) {
+  case 0:
+    return [x, y]
+  case 1:
+    return [x, y - 1]
+  case 2:
+    return [x + 1, y]
+  case 3:
+    return [x, y + 1]
+  case 4:
+    return [x - 1, y]
+  }
+}

@@ -5,9 +5,19 @@
 // http://creativecommons.org/licenses/by-nc-sa/3.0/us/
 
 (function (_) {
-  const state = {
+  let state = {
     FPS: 24,
     interval: undefined
+  }
+
+  const setState = _.curry((path, data) => {
+    state = _.assocPath(path, data, state)
+    console.log(state)
+  })
+
+  const context = {
+    state,
+    setState
   }
 
   var canvas = document.getElementById('canvas'),
@@ -629,7 +639,7 @@
     })
   }
 
-  const start = state =>
+  const start = ({ state }) =>
     setInterval(draw, 1000 / state.FPS)
 
   function stop() {
@@ -654,13 +664,13 @@
 
   const pause = _.ifElse(
     isPaused,
-    () => state.interval = start(state),
+    () => setState(['interval'], start(context)),
     () => {
       stop()
       // TODO: separate display from core
       display_text('all', 'GAME PAUSED')
       draw()
-      state.interval = undefined
+      setState(['interval'], undefined)
     }
   )
 
@@ -703,19 +713,19 @@
       stop()
       init = single_with_bot_init
       init()
-      state.interval = start(state)
+      setState(['interval'], start(context))
     }
     if (s === '=') {
       stop()
       init = two_p_init
       init()
-      state.interval = start(state)
+      setState(['interval'], start(context))
     }
     if (s === '[') {
       stop()
       init = single_init
       init()
-      state.interval = start(state)
+      setState(['interval'], start(context))
     }
     // DEBUGGING
     //    if (String.fromCharCode(e.charCode) === '1'){
@@ -1044,6 +1054,6 @@
   }
   init = single_init
   init()
-  state.interval = start(state)
+  setState(['interval'], start(context))
   pause(state.interval)
 }(R))

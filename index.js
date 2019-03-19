@@ -819,7 +819,7 @@
   function single_init(speed, level) {
     var i
     games = []
-    games.push(new Game(10, 16, speed || 8, level || 10, 0))
+    games.push(new Game(10, 16, speed || 8, level || 1, 0))
     init_blocks()
   }
 

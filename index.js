@@ -43,6 +43,7 @@
       background: '#fff',
       blocksize: 20,
     },
+    getState: path => _.path(path, context.state),
     setState: _.curry((path, data) => {
       context.state = _.assocPath(path, data, context.state)
     })
@@ -55,21 +56,21 @@
     toggle
   } = _.evolve({
     stop: fn => () =>
-      context.setState(['interval'], fn(context.state.interval)),
+      context.setState(['interval'], fn(context.getState(['interval']))),
     start: fn => () =>
-      context.setState(['interval'], fn(context.state.FPS, draw)),
+      context.setState(['interval'], fn(context.getState(['FPS']), draw)),
     draw: fn => () =>
       fn(arena, games, {
-        width: context.state.width,
-        height: context.state.height,
-        background: context.state.background,
+        width: context.getState(['width']),
+        height: context.getState(['height']),
+        background: context.getState(['background']),
       }),
     toggle: fn => () =>
       fn(start, () => {
         stop()
         display_text('all', 'GAME PAUSED')
         draw()
-      }, context.state.interval)
+      }, context.getState(['interval']))
   }, {
     stop: interval => clearInterval(interval),
     start: _.curry((FPS, draw) => setInterval(draw, 1000 / FPS)),
@@ -259,17 +260,17 @@
         if (this.state[i][j] === -1)
           arena.fillStyle = colors[0]
 
-        draw_block(i * context.state.blocksize, j * context.state.blocksize, context.state.blocksize, colors[this.state[i][j]], this.neighbors[i][j])
-        //arena.fillRect(i * context.state.blocksize, j * context.state.blocksize, context.state.blocksize, context.state.blocksize);
+        draw_block(i * context.getState(['blocksize']), j * context.getState(['blocksize']), context.getState(['blocksize']), colors[this.state[i][j]], this.neighbors[i][j])
+        //arena.fillRect(i * context.getState(['blocksize']), j * context.getState(['blocksize']), context.getState(['blocksize']), context.getState(['blocksize']));
         if (this.initial[i][j] === 1)
-          draw_virus(i, j, context.state.blocksize)
+          draw_virus(i, j, context.getState(['blocksize']))
 
       }
 
     for (i = 0; i < this.falling.length; i++)
-      this.falling[i].draw(context.state.blocksize)
+      this.falling[i].draw(context.getState(['blocksize']))
 
-    arena.strokeRect(0, 0, this.x * context.state.blocksize, this.y * context.state.blocksize)
+    arena.strokeRect(0, 0, this.x * context.getState(['blocksize']), this.y * context.getState(['blocksize']))
     this.draw_chrome()
     this.display_messages()
   }
@@ -278,13 +279,13 @@
     arena.fillStyle = '#000000'
     arena.font = '10pt helvetica'
     arena.textalign = 'left'
-    arena.fillText('Virus: ' + this.virus, 0, this.y * context.state.blocksize + 20)
-    arena.fillText('Wins: ' + wins[this.index], 150, this.y * context.state.blocksize + 20)
+    arena.fillText('Virus: ' + this.virus, 0, this.y * context.getState(['blocksize']) + 20)
+    arena.fillText('Wins: ' + wins[this.index], 150, this.y * context.getState(['blocksize']) + 20)
     arena.fillText('Next: ', 45, -10)
     arena.save()
-    arena.translate(context.state.blocksize * (Math.floor(this.x / 2) - 1), -25)
-    draw_block(0, 0, context.state.blocksize, colors[blocks[this.blocks_index]], 2)
-    draw_block(context.state.blocksize, 0, context.state.blocksize, colors[blocks[this.blocks_index + 1]], 4)
+    arena.translate(context.getState(['blocksize']) * (Math.floor(this.x / 2) - 1), -25)
+    draw_block(0, 0, context.getState(['blocksize']), colors[blocks[this.blocks_index]], 2)
+    draw_block(context.getState(['blocksize']), 0, context.getState(['blocksize']), colors[blocks[this.blocks_index + 1]], 4)
     arena.restore()
   }
 
@@ -687,10 +688,9 @@
   window.addEventListener('keypress', function (e) {
     var s = String.fromCharCode(e.which)
     if (e.which === 32)
-      toggle(context.state.interval)
+      toggle()
 
     const keyP = _.when(_.equals('p'))
-    // keyP(_.partial(toggle, [context.state.interval]), s)
     keyP(toggle, s)
 
     var game = (init === two_p_init || init === single_with_bot_init) ? 1 : 0
@@ -1066,5 +1066,5 @@
   init = single_init
   init()
   start()
-  toggle(context.state.interval)
+  toggle()
 }(R, document))

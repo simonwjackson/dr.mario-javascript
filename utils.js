@@ -101,3 +101,171 @@ export const direct = (x, y, n) => {
     return [x - 1, y]
   }
 }
+
+export const inList = (a, L, eq) => {
+  let i
+  for (i = 0; i < L.length; i++)
+    if (eq(L[i], a))
+      return true
+
+  return false
+}
+
+export const set_drop_state = (goalx, current_state, colors, orientation) => {
+  //console.log('goal ',goalx, ' ', orientation);
+  let i, possible_states = [],
+    a = copy(current_state),
+    goal
+  for (i = 0; i < 4; i++) {
+    possible_states.push(a)
+    a = copy(a)
+    a = flip2by2(a)
+  }
+  if (orientation === 'down') {
+    goal = [
+      [colors[0], colors[1]],
+      [0, 0]
+    ]
+    if (inList(goal, possible_states, eq))
+      return [goalx, goal]
+
+    goal = [
+      [0, 0],
+      [colors[0], colors[1]]
+    ]
+    if (inList(goal, possible_states, eq))
+      return [goalx - 1, goal]
+
+  }
+  if (orientation === 'flat') {
+    goal = [
+      [colors[0], 0],
+      [colors[1], 0]
+    ]
+    if (inList(goal, possible_states, eq))
+      return [goalx, goal]
+
+    goal = [
+      [0, colors[0]],
+      [0, colors[1]]
+    ]
+    if (inList(goal, possible_states, eq))
+      return [goalx, goal]
+
+  }
+}
+
+export const analyze_state = state => {
+  let i, tops = [],
+    heights = [],
+    t
+  for (i = 0; i < state.length; i++) {
+    t = 0
+    while (t < state[i].length && state[i][t] === 0)
+      t++
+
+    tops.push(state[i][t])
+    heights.push(t)
+  }
+  return {
+    tops: tops,
+    heights: heights
+  }
+}
+
+export const get_drop_colors = drop_state => {
+  let n = [],
+    i, j, a = drop_state
+  for (i = 0; i < a.length; i++)
+    for (j = 0; j < a[0].length; j++)
+      if (a[i][j] !== 0)
+        n.push(a[i][j])
+
+  return n
+}
+
+export const single_in_list = (c, stateinfo) => {
+  let i, s, l = stateinfo.tops.length,
+    offset = Math.floor(l / 4),
+    besth = 0,
+    x = -1
+  for (i = 0; i < l; i++) {
+    s = (i + offset) % l
+    if (c === stateinfo.tops[s] && stateinfo.heights[s] > besth) {
+      x = s
+      besth = stateinfo.heights[s]
+    }
+  }
+  return x
+}
+
+export const pair_in_list = (p, stateinfo) => {
+  let i, s, l = stateinfo.tops.length,
+    offset = Math.floor(l / 2)
+  for (i = 0; i < l - 1; i++) {
+    s = (i + offset) % l
+    if (p[0] === stateinfo.tops[s] && p[1] === stateinfo.tops[s + 1] && stateinfo.heights[s] > 3 && stateinfo.heights[s + 1] > 3)
+      return s
+
+  }
+  return -1
+}
+
+//assume possitive L
+export const max = L => {
+  let l = L.length,
+    i, best = -1,
+    besti = 0
+  for (i = 0; i < l; i++)
+    if (L[i] > best) {
+      best = L[i]
+      besti = i
+    }
+
+  return {
+    max: best,
+    max_index: besti
+  }
+}
+
+//input state & falling state, output: desired position and rotation
+// function random_algo(state, drop_state) {
+//   let x = state.length,
+//     y = state[0].length,
+//     new_state = copy(drop_state),
+//     i, l
+//   for (i = 0, l = Math.random() * 2; i < l; i++)
+//     new_state = flip2by2(new_state)
+
+//   return [Math.floor(Math.random() * x), new_state]
+// }
+
+export const better_algo = (state, drop_state) => {
+  let stateinfo = analyze_state(state),
+    top_color = stateinfo.tops,
+    heights = stateinfo.heights,
+    colors = get_drop_colors(drop_state),
+    x = 0
+  x = pair_in_list(colors, stateinfo)
+  if (x !== -1)
+    return set_drop_state(x, drop_state, colors, 'flat')
+
+  colors = [colors[1], colors[0]]
+  x = pair_in_list(colors, stateinfo)
+  if (x !== -1)
+    return set_drop_state(x, drop_state, colors, 'flat')
+
+  if (colors[0] === colors[1]) {
+    // add check for double below
+  }
+  x = single_in_list(colors[1], stateinfo)
+  if (x !== -1)
+    return set_drop_state(x, drop_state, [colors[0], colors[1]], 'down')
+
+  x = single_in_list(colors[0], stateinfo)
+  if (x !== -1)
+    return set_drop_state(x, drop_state, [colors[1], colors[0]], 'down')
+
+  //return random_algo(state, drop_state);
+  return set_drop_state(max(stateinfo.heights).max_index, drop_state, [colors[1], colors[0]], 'down')
+}

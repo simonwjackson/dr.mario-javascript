@@ -673,7 +673,7 @@
 
   const isPaused = _.isNil
 
-  const pause = _.ifElse(
+  const toggle = _.ifElse(
     isPaused,
     start,
     () => {
@@ -688,10 +688,10 @@
   window.addEventListener('keypress', function (e) {
     var s = String.fromCharCode(e.which)
     if (e.which === 32)
-      pause(context.state.interval)
+      toggle(context.state.interval)
 
-    if (s === 'p')
-      pause(context.state.interval)
+    const keyP = _.when(_.equals('p'))
+    keyP(_.partial(toggle, [context.state.interval]), s)
 
     var game = (init === two_p_init || init === single_with_bot_init) ? 1 : 0
     if (s === '4' || s === 'j')
@@ -831,11 +831,10 @@
     init_blocks()
   }
 
-  function init_blocks() {
-    for (i = 0; i < 10000; i++)
-      blocks.push(1 + Math.floor(Math.random() * COLORS))
-
-  }
+  const init_blocks = () =>
+    _.times(() =>
+      blocks.push(1 + Math.floor(Math.random() * COLORS)),
+    10000)
 
   // AI code
   function BotGame(game, algo, botspeed) {
@@ -1067,5 +1066,5 @@
   init = single_init
   init()
   start()
-  pause(context.state.interval)
+  toggle(context.state.interval)
 }(R))

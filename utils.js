@@ -67,9 +67,11 @@ export const eq = (a, b) => {
 }
 
 export const flip2by2 = a => {
-  let t = a[0][0]
-  a[0][0] = a[0][1]
-  a[0][1] = a[1][1]
-  a[1][1] = a[1][0]
-  a[1][0] = t
+  const b = _.clone(a)
+  const t = b[0][0]
+  b[0][0] = b[0][1]
+  b[0][1] = b[1][1]
+  b[1][1] = b[1][0]
+  b[1][0] = t
+  return b
 }

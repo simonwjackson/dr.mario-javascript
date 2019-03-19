@@ -155,7 +155,7 @@ Block.prototype.draw = function (blocksize) {
 Game.prototype.flip = function () {
   let t, obj = this.movable,
     a = copy(obj.a)
-  flip2by2(a)
+  a = flip2by2(a)
   if (!this.collision(a, obj.x, obj.y)) {
     obj.a = a
     obj.neighbors = (obj.neighbors + 1) % 4
@@ -812,7 +812,7 @@ function random_algo(state, drop_state) {
     new_state = copy(drop_state),
     i, l
   for (i = 0, l = Math.random() * 2; i < l; i++)
-    flip2by2(new_state)
+    new_state = flip2by2(new_state)
 
   return [Math.floor(Math.random() * x), new_state]
 }
@@ -937,7 +937,7 @@ function set_drop_state(goalx, current_state, colors, orientation) {
   for (i = 0; i < 4; i++) {
     possible_states.push(a)
     a = copy(a)
-    flip2by2(a)
+    a = flip2by2(a)
   }
   if (orientation === 'down') {
     goal = [

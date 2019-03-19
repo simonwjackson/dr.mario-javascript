@@ -43,7 +43,11 @@ const {
   start,
   draw,
   drawVirus,
-  toggle
+  toggle,
+  // Matrix
+  copy,
+  eq,
+  flip2by2
 } = _.evolve({
   stop: fn => () => withContext.stop(context)(fn),
   start: fn => () => withContext.start(context)(draw)(fn),
@@ -110,7 +114,7 @@ let R = 0.3,
     [1 - R, -1]
   ]
 
-function draw_path(arena, P) {
+function drawPath(arena, P) {
   arena.beginPath()
   arena.moveTo(P[0][0], P[0][1])
   for (let i = 1, l = P.length; i < l; i++)
@@ -119,21 +123,21 @@ function draw_path(arena, P) {
   arena.lineTo(P[0][0], P[0][1])
 }
 
-function draw_block(x, y, r, color, neighbor) {
-  context.get(['arena']).fillStyle = color
-  context.get(['arena']).beginPath()
-  context.get(['arena']).save()
-  context.get(['arena']).translate(x + r / 2, y + r / 2)
-  context.get(['arena']).scale(r / 2, r / 2)
+const drawBlock = arena => (x, y, r, color, neighbor) => {
+  arena.fillStyle = color
+  arena.beginPath()
+  arena.save()
+  arena.translate(x + r / 2, y + r / 2)
+  arena.scale(r / 2, r / 2)
   if (neighbor && neighbor !== 0) {
-    context.get(['arena']).rotate((+neighbor - 1) * Math.PI * 2 / 4)
-    draw_path(context.get(['arena']), hpill)
+    arena.rotate((+neighbor - 1) * Math.PI * 2 / 4)
+    drawPath(arena, hpill)
   }
   else {
-    draw_path(context.get(['arena']), pill)
+    drawPath(arena, pill)
   }
-  context.get(['arena']).fill()
-  context.get(['arena']).restore()
+  arena.fill()
+  arena.restore()
 }
 
 Block.prototype.draw = function (blocksize) {
@@ -143,41 +147,9 @@ Block.prototype.draw = function (blocksize) {
       if (this.a[i][j] === 0)
         continue
 
-      draw_block((this.x + i) * blocksize, (this.y + j) * blocksize, blocksize, context.get(['colors'])[this.a[i][j]], N[this.neighbors][i][j])
+      drawBlock( context.get(['arena']) )((this.x + i) * blocksize, (this.y + j) * blocksize, blocksize, context.get(['colors'])[this.a[i][j]], N[this.neighbors][i][j])
     }
 
-}
-
-//Matrix operations
-
-function copy(a) {
-  let n = [],
-    i, j
-  for (i = 0; i < a.length; i++) {
-    n[i] = []
-    for (j = 0; j < a[0].length; j++)
-      n[i][j] = a[i][j]
-
-  }
-  return n
-}
-
-function eq(a, b) {
-  let i, j
-  for (i = 0; i < a.length; i++)
-    for (j = 0; j < a[0].length; j++)
-      if (a[i][j] !== b[i][j])
-        return false
-
-  return true
-}
-
-function flip2by2(a) {
-  let t = a[0][0]
-  a[0][0] = a[0][1]
-  a[0][1] = a[1][1]
-  a[1][1] = a[1][0]
-  a[1][0] = t
 }
 
 Game.prototype.flip = function () {
@@ -200,7 +172,7 @@ Game.prototype.draw = function () {
       if (this.state[i][j] === -1)
         context.get(['arena']).fillStyle = context.get(['colors'])[0]
 
-      draw_block(i * context.get(['blocksize']), j * context.get(['blocksize']), context.get(['blocksize']), context.get(['colors'])[this.state[i][j]], this.neighbors[i][j])
+      drawBlock( context.get(['arena']) )(i * context.get(['blocksize']), j * context.get(['blocksize']), context.get(['blocksize']), context.get(['colors'])[this.state[i][j]], this.neighbors[i][j])
       //context.get(['arena']).fillRect(i * context.get(['blocksize']), j * context.get(['blocksize']), context.get(['blocksize']), context.get(['blocksize']));
       if (this.initial[i][j] === 1)
         drawVirus(context.get(['arena']))(i)(j)(context.get(['blocksize']))
@@ -224,8 +196,8 @@ Game.prototype.draw_chrome = function (level) {
   context.get(['arena']).fillText('Next: ', 45, -10)
   context.get(['arena']).save()
   context.get(['arena']).translate(context.get(['blocksize']) * (Math.floor(this.x / 2) - 1), -25)
-  draw_block(0, 0, context.get(['blocksize']), context.get(['colors'])[blocks[this.blocks_index]], 2)
-  draw_block(context.get(['blocksize']), 0, context.get(['blocksize']), context.get(['colors'])[blocks[this.blocks_index + 1]], 4)
+  drawBlock( context.get(['arena']) )(0, 0, context.get(['blocksize']), context.get(['colors'])[blocks[this.blocks_index]], 2)
+  drawBlock( context.get(['arena']) )(context.get(['blocksize']), 0, context.get(['blocksize']), context.get(['colors'])[blocks[this.blocks_index + 1]], 4)
   context.get(['arena']).restore()
 }
 
@@ -416,7 +388,7 @@ function direct(x, y, n) {
 Game.prototype.mark_for_deletion = function (i, j) {
   this.state[i][j] = -1
   if (this.neighbors[i][j] !== 0) {
-    n = direct(i, j, this.neighbors[i][j])
+    let n = direct(i, j, this.neighbors[i][j])
     this.neighbors[n[0]][n[1]] = 0
     this.neighbors[i][j] = 0
   }

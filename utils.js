@@ -41,3 +41,35 @@ export const drawVirus = arena => i => j => blocksize => {
   arena.fill()
   arena.restore()
 }
+
+//Matrix operations
+
+export const copy = a => {
+  let n = [], i, j
+
+  for (i = 0; i < a.length; i++) {
+    n[i] = []
+    for (j = 0; j < a[0].length; j++)
+      n[i][j] = a[i][j]
+
+  }
+  return n
+}
+
+export const eq = (a, b) => {
+  let i, j
+  for (i = 0; i < a.length; i++)
+    for (j = 0; j < a[0].length; j++)
+      if (a[i][j] !== b[i][j])
+        return false
+
+  return true
+}
+
+export const flip2by2 = a => {
+  let t = a[0][0]
+  a[0][0] = a[0][1]
+  a[0][1] = a[1][1]
+  a[1][1] = a[1][0]
+  a[1][0] = t
+}

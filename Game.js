@@ -20,29 +20,6 @@ export default (context, Block, blocks, N, direct, onetrue, stop, display_text, 
     this.messages = []
   }
 
-  Game.prototype.flip = function () {
-    this.movable = _.defaultTo({}, this.movable)
-    const { x, y } = _.pickAll(['x', 'y'], this.movable)
-
-    const flip = _.compose(
-      flip2by2,
-      copy
-    )
-
-    const a = _.compose(
-      _.unless(_.isEmpty, flip),
-      _.defaultTo([]),
-      _.prop('a')
-    )(this.movable)
-
-    const hasCollision = !this.collision(a, x, y)
-
-    if (hasCollision) {
-      this.movable.a = a
-      this.movable.neighbors = (this.movable.neighbors + 1) % 4
-    }
-  }
-
   Game.prototype.draw = function () {
     let i, j
     for (i = 0; i < this.x; i++)
@@ -293,13 +270,6 @@ export default (context, Block, blocks, N, direct, onetrue, stop, display_text, 
     return cmarked.length !== 0
   }
 
-  Game.prototype.start_fastdrop = function () {
-    if (this.movable && !this.movable.fast_drop) {
-      this.movable.speed = 1
-      this.movable.fast_drop = true
-    }
-  }
-
   Game.prototype.orphans = function () {
     let i, j, n, y, x, new_block
     for (i = 0; i < this.x; i++)
@@ -398,21 +368,6 @@ export default (context, Block, blocks, N, direct, onetrue, stop, display_text, 
 
   }
 
-  Game.prototype.game_over = function () {
-    let i = this.index
-    let other = (i + 1) % 2
-
-    stop(context)
-    display_text(i, 'You lose')
-
-    if (context.get(['games']).length > 1) {
-      display_text(other, 'You win')
-      wins[other] += 1
-    }
-
-    init()
-  }
-
   Game.prototype.victory = function () {
     let i = this.index,
       other = (i + 1) % 2
@@ -442,6 +397,55 @@ export default (context, Block, blocks, N, direct, onetrue, stop, display_text, 
     game_to = context.get(['games'])[(i + 1) % 2]
     game_to.get_punish(colors_list)
   }
+
+  /* ************* Issues ****************************** */
+
+  Game.prototype.start_fastdrop = function () {
+    if (this.movable && !this.movable.fast_drop) {
+      this.movable.speed = 1
+      this.movable.fast_drop = true
+    }
+  }
+
+  Game.prototype.flip = function () {
+    this.movable = _.defaultTo({}, this.movable)
+    const { x, y } = _.pickAll(['x', 'y'], this.movable)
+
+    const flip = _.compose(
+      flip2by2,
+      copy
+    )
+
+    const a = _.compose(
+      _.unless(_.isEmpty, flip),
+      _.defaultTo([]),
+      _.prop('a')
+    )(this.movable)
+
+    const hasCollision = !this.collision(a, x, y)
+
+    if (hasCollision) {
+      this.movable.a = a
+      this.movable.neighbors = (this.movable.neighbors + 1) % 4
+    }
+  }
+
+  Game.prototype.game_over = function () {
+    let i = this.index
+    let other = (i + 1) % 2
+
+    stop(context)
+    display_text(i, 'You lose')
+
+    if (context.get(['games']).length > 1) {
+      display_text(other, 'You win')
+      wins[other] += 1
+    }
+
+    init()
+  }
+
+  /* *************** Main ******************* */
 
   return (x, y, speed, level, index) => {
     const game = new Game(x, y, speed, level, index)

@@ -28,13 +28,16 @@ export default (context, Block, blocks, N, direct, onetrue, stop, display_text, 
       flip2by2,
       copy
     )
+
     const a = _.compose(
       _.unless(_.isEmpty, flip),
       _.defaultTo([]),
       _.prop('a')
     )(this.movable)
 
-    if (!this.collision(a, x, y)) {
+    const hasCollision = !this.collision(a, x, y)
+
+    if (hasCollision) {
       this.movable.a = a
       this.movable.neighbors = (this.movable.neighbors + 1) % 4
     }

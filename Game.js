@@ -1,3 +1,5 @@
+import * as _ from '//cdn.jsdelivr.net/npm/ramda@latest/es/index.js'
+
 export default (context, Block, blocks, N, direct, onetrue, stop, display_text, wins, init, game_to, drawBlock, drawVirus, copy, flip2by2) => {
   function Game(x, y, speed, level, index) {
     this.index = index
@@ -19,12 +21,22 @@ export default (context, Block, blocks, N, direct, onetrue, stop, display_text, 
   }
 
   Game.prototype.flip = function () {
-    let t, obj = this.movable,
-      a = copy(obj.a)
-    a = flip2by2(a)
-    if (!this.collision(a, obj.x, obj.y)) {
-      obj.a = a
-      obj.neighbors = (obj.neighbors + 1) % 4
+    this.movable = _.defaultTo({}, this.movable)
+    const { x, y } = _.pickAll(['x', 'y'], this.movable)
+
+    const flip = _.compose(
+      flip2by2,
+      copy
+    )
+    const a = _.compose(
+      _.unless(_.isEmpty, flip),
+      _.defaultTo([]),
+      _.prop('a')
+    )(this.movable)
+
+    if (!this.collision(a, x, y)) {
+      this.movable.a = a
+      this.movable.neighbors = (this.movable.neighbors + 1) % 4
     }
   }
 
@@ -425,14 +437,17 @@ export default (context, Block, blocks, N, direct, onetrue, stop, display_text, 
   }
 
   Game.prototype.game_over = function () {
-    let i = this.index,
-      other = (i + 1) % 2
+    let i = this.index
+    let other = (i + 1) % 2
+
     stop(context)
     display_text(i, 'You lose')
+
     if (context.get(['games']).length > 1) {
       display_text(other, 'You win')
       wins[other] += 1
     }
+
     init()
   }
 

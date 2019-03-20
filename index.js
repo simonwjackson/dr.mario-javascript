@@ -48,10 +48,10 @@ const {
   toggle,
   // Matrix
   copy,
-  eq,
   flip2by2,
   onetrue,
   direct,
+  random_algo,
   better_algo,
 } = _.evolve({
   stop: fn => () => withContext.stop(context)(fn),
@@ -202,7 +202,6 @@ const keyBindings = e => {
 window.addEventListener('keypress', keyBindings, false)
 
 function copy_game_state(game_from, game_to) {
-  console.log(game_from, game_to)
   game_to.state = copy(game_from.state)
   game_to.initial = copy(game_from.initial)
   game_to.virus = game_from.virus; + 1
@@ -230,11 +229,11 @@ function single_init(speed, level) {
   initBlocks(10000)
 }
 
-function single_with_bot_init(speed, level) {
+function single_with_bot_init(speed = 20, level = 4) {
   context.set(['games'], [])
-  context.get(['games']).push(BotGame(new Game(10, 16, speed || 8, level || 10, 0), better_algo))
-  context.get(['games']).push(new Game(10, 16, speed || 8, level || 10, 1))
-  console.log(context.get(['games']))
+  context.get(['games']).push(BotGame(new Game(10, 16, speed, level, 0), random_algo))
+  context.get(['games']).push(new Game(10, 16, speed, level, 1))
+
   copy_game_state(context.get(['games'])[0].game, context.get(['games'])[1])
   initBlocks(10000)
 }

@@ -229,23 +229,25 @@ export const max = L => {
 }
 
 //input state & falling state, output: desired position and rotation
-// function random_algo(state, drop_state) {
-//   let x = state.length,
-//     y = state[0].length,
-//     new_state = copy(drop_state),
-//     i, l
-//   for (i = 0, l = Math.random() * 2; i < l; i++)
-//     new_state = flip2by2(new_state)
+export const random_algo = (state, drop_state) => {
+  let x = state.length
+  let new_state = copy(drop_state)
+  let i
+  let l
 
-//   return [Math.floor(Math.random() * x), new_state]
-// }
+  for (i = 0, l = Math.random() * 2; i < l; i++)
+    new_state = flip2by2(new_state)
+
+  return [Math.floor(Math.random() * x), new_state]
+}
 
 export const better_algo = (state, drop_state) => {
-  let stateinfo = analyze_state(state),
-    top_color = stateinfo.tops,
-    heights = stateinfo.heights,
-    colors = get_drop_colors(drop_state),
-    x = 0
+  let stateinfo = analyze_state(state)
+  // top_color = stateinfo.tops,
+  // heights = stateinfo.heights,
+  let colors = get_drop_colors(drop_state)
+  let x = 0
+
   x = pair_in_list(colors, stateinfo)
   if (x !== -1)
     return set_drop_state(x, drop_state, colors, 'flat')

@@ -69,20 +69,6 @@ export default (context, Block, blocks, N, direct, onetrue, stop, display_text, 
     this.display_messages()
   }
 
-  Game.prototype.draw_chrome = function (level) {
-    context.get(['arena']).fillStyle = '#000000'
-    context.get(['arena']).font = '10pt helvetica'
-    context.get(['arena']).textalign = 'left'
-    context.get(['arena']).fillText('Virus: ' + this.virus, 0, this.y * context.get(['blocksize']) + 20)
-    context.get(['arena']).fillText('Wins: ' + wins[this.index], 150, this.y * context.get(['blocksize']) + 20)
-    context.get(['arena']).fillText('Next: ', 45, -10)
-    context.get(['arena']).save()
-    context.get(['arena']).translate(context.get(['blocksize']) * (Math.floor(this.x / 2) - 1), -25)
-    drawBlock( context.get(['arena']) )(0, 0, context.get(['blocksize']), context.get(['colors'])[blocks[this.blocks_index]], 2)
-    drawBlock( context.get(['arena']) )(context.get(['blocksize']), 0, context.get(['blocksize']), context.get(['colors'])[blocks[this.blocks_index + 1]], 4)
-    context.get(['arena']).restore()
-  }
-
   Game.prototype.line_test = function (ist, jst) {
     let col, i = ist,
       j = jst - 1
@@ -488,14 +474,31 @@ export default (context, Block, blocks, N, direct, onetrue, stop, display_text, 
           }
     }
 
+    const draw_chrome = function (level) {
+      const arena = context.get(['arena'])
+
+      arena.fillStyle = '#000000'
+      arena.font = '10pt helvetica'
+      arena.textalign = 'left'
+      arena.fillText('Virus: ' + game.virus, 0, game.y * context.get(['blocksize']) + 20)
+      arena.fillText('Wins: ' + wins[game.index], 150, game.y * context.get(['blocksize']) + 20)
+      arena.fillText('Next: ', 45, -10)
+      arena.save()
+      arena.translate(context.get(['blocksize']) * (Math.floor(game.x / 2) - 1), -25)
+      drawBlock( arena )(0, 0, context.get(['blocksize']), context.get(['colors'])[blocks[game.blocks_index]], 2)
+      drawBlock( arena )(context.get(['blocksize']), 0, context.get(['blocksize']), context.get(['colors'])[blocks[game.blocks_index + 1]], 4)
+      context.get(['arena']).restore()
+    }
+
     return {
       add_message,
       display_messages,
       delmarked,
+      draw_chrome,
+
       blocks_index :  game.blocks_index,
       collision: game.collision,
       copy: game.copy,
-      draw_chrome: game.draw_chrome,
       draw: game.draw,
       dropdown: game.dropdown,
       falling : game.falling,

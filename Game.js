@@ -21,7 +21,6 @@ export default (context, Block, blocks, N, direct, onetrue, stop, display_text, 
   }
 
   Game.prototype.flip = function () {
-    console.log('prototype flip')
     this.movable = _.defaultTo({}, this.movable)
     const { x, y } = _.pickAll(['x', 'y'], this.movable)
 
@@ -36,9 +35,9 @@ export default (context, Block, blocks, N, direct, onetrue, stop, display_text, 
       _.prop('a')
     )(this.movable)
 
-    const hasCollision = !this.collision(a, x, y)
+    const noCollision = !this.collision(a, x, y)
 
-    if (hasCollision) {
+    if (noCollision) {
       this.movable.a = a
       this.movable.neighbors = (this.movable.neighbors + 1) % 4
     }
@@ -66,22 +65,25 @@ export default (context, Block, blocks, N, direct, onetrue, stop, display_text, 
 
     context.get(['arena']).strokeRect(0, 0, this.x * context.get(['blocksize']), this.y * context.get(['blocksize']))
     this.draw_chrome()
+    console.log(this)
+    console.log(this.draw_chrome)
     this.display_messages()
   }
 
-  Game.prototype.draw_chrome = function (level) {
-    context.get(['arena']).fillStyle = '#000000'
-    context.get(['arena']).font = '10pt helvetica'
-    context.get(['arena']).textalign = 'left'
-    context.get(['arena']).fillText('Virus: ' + this.virus, 0, this.y * context.get(['blocksize']) + 20)
-    context.get(['arena']).fillText('Wins: ' + wins[this.index], 150, this.y * context.get(['blocksize']) + 20)
-    context.get(['arena']).fillText('Next: ', 45, -10)
-    context.get(['arena']).save()
-    context.get(['arena']).translate(context.get(['blocksize']) * (Math.floor(this.x / 2) - 1), -25)
-    drawBlock( context.get(['arena']) )(0, 0, context.get(['blocksize']), context.get(['colors'])[blocks[this.blocks_index]], 2)
-    drawBlock( context.get(['arena']) )(context.get(['blocksize']), 0, context.get(['blocksize']), context.get(['colors'])[blocks[this.blocks_index + 1]], 4)
-    context.get(['arena']).restore()
-  }
+  // Game.prototype.draw_chrome = function (level) {
+  //   console.log('draw chome')
+  //   context.get(['arena']).fillStyle = '#000000'
+  //   context.get(['arena']).font = '10pt helvetica'
+  //   context.get(['arena']).textalign = 'left'
+  //   context.get(['arena']).fillText('Virus: ' + this.virus, 0, this.y * context.get(['blocksize']) + 20)
+  //   context.get(['arena']).fillText('Wins: ' + wins[this.index], 150, this.y * context.get(['blocksize']) + 20)
+  //   context.get(['arena']).fillText('Next: ', 45, -10)
+  //   context.get(['arena']).save()
+  //   context.get(['arena']).translate(context.get(['blocksize']) * (Math.floor(this.x / 2) - 1), -25)
+  //   drawBlock(context.get(['arena']))(0, 0, context.get(['blocksize']), context.get(['colors'])[blocks[this.blocks_index]], 2)
+  //   drawBlock(context.get(['arena']))(context.get(['blocksize']), 0, context.get(['blocksize']), context.get(['colors'])[blocks[this.blocks_index + 1]], 4)
+  //   context.get(['arena']).restore()
+  // }
 
   Game.prototype.line_test = function (ist, jst) {
     let col, i = ist,
@@ -490,20 +492,40 @@ export default (context, Block, blocks, N, direct, onetrue, stop, display_text, 
       }
     }
 
+    const draw_chrome = level => {
+      const arena = context.get(['arena'])
+
+      arena.fillStyle = '#000000'
+      arena.font = '10pt helvetica'
+      arena.textalign = 'left'
+      arena.fillText('Virus: ' + game.virus, 0, game.y * context.get(['blocksize']) + 20)
+      arena.fillText('Wins: ' + wins[game.index], 150, game.y * context.get(['blocksize']) + 20)
+      arena.fillText('Next: ', 45, -10)
+      arena.save()
+      arena.translate(context.get(['blocksize']) * (Math.floor(game.x / 2) - 1), -25)
+      drawBlock(arena)(0, 0, context.get(['blocksize']), context.get(['colors'])[blocks[game.blocks_index]], 2)
+      drawBlock(arena)(context.get(['blocksize']), 0, context.get(['blocksize']), context.get(['colors'])[blocks[game.blocks_index + 1]], 4)
+      arena.restore()
+    }
+
     return {
       add_message,
       display_messages,
       delmarked,
       dropdown,
+      draw_chrome,
 
+      // Issues (possibly with this.movement)
+      flip: game.flip,
+      game_over: game.game_over,
+      start_fastdrop: game.start_fastdrop,
+
+      // Convert
       blocks_index :  game.blocks_index,
       collision: game.collision,
       copy: game.copy,
-      draw_chrome: game.draw_chrome,
       draw: game.draw,
       falling : game.falling,
-      flip: game.flip,
-      game_over: game.game_over,
       get_punish: game.get_punish,
       index : game.index,
       init_state: game.init_state,
@@ -522,7 +544,6 @@ export default (context, Block, blocks, N, direct, onetrue, stop, display_text, 
       punish_list : game.punish_list,
       set_punish: game.set_punish,
       speed : game.speed,
-      start_fastdrop: game.start_fastdrop,
       state : game.state,
       tick: game.tick,
       ticks: game.ticks,

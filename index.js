@@ -122,19 +122,18 @@ function display_text(game, text) {
 
   else
     context.get(['games'])[game].add_message(text)
-
 }
 
-window.addEventListener('keypress', function (e) {
+const keyBindings = e => {
   let s = String.fromCharCode(e.which)
-  if (e.which === 32)
-    toggle()
+  if (e.which === 32) toggle()
 
   const keyP = _.when(_.equals('p'))
   keyP(toggle, s)
 
   let game = (init === two_p_init || init === single_with_bot_init) ? 1 : 0
-  if (s === '4' || s === 'j')
+
+  if (['4', 'j'].includes(s))
     context.get(['games'])[game].move('left')
 
   if (s === '6' || s === 'l')
@@ -158,20 +157,22 @@ window.addEventListener('keypress', function (e) {
 
     if (s === 'w')
       context.get(['games'])[0].flip()
-
   }
+
   if (s === '-') {
     stop(context)
     init = single_with_bot_init
     init()
     start()
   }
+
   if (s === '=') {
     stop(context)
     init = two_p_init
     init()
     start()
   }
+
   if (s === '[') {
     stop(context)
     init = single_init
@@ -197,7 +198,9 @@ window.addEventListener('keypress', function (e) {
   //    }
   //
   e.preventDefault()
-}, false)
+}
+
+window.addEventListener('keypress', keyBindings, false)
 
 function copy_game_state(game_from, game_to) {
   game_to.state = copy(game_from.state)

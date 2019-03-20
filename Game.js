@@ -363,27 +363,6 @@ export default (context, Block, blocks, N, direct, onetrue, stop, display_text, 
 
   }
 
-  Game.prototype.dropdown = function (obj) {
-    let newones, that = this
-    if (!this.collision(obj.a, obj.x, obj.y + 1)) {
-      obj.y += 1
-      return false
-    }
-    else {
-      if (this.movable === obj)
-        this.movable = undefined
-
-      newones = this.copy(obj)
-      newones = newones.map(function (a) {
-        return that.mark(a[0], a[1])
-      })
-      if (onetrue(newones))
-        this.markedtime = this.ticks
-
-      return true
-    }
-  }
-
   Game.prototype.move = function (dir) {
     let i, j, x, y, pos, obj, good, a
     if (this.movable) {
@@ -488,16 +467,40 @@ export default (context, Block, blocks, N, direct, onetrue, stop, display_text, 
           }
     }
 
+    const dropdown = obj => {
+      let newones
+      let that = game
+
+      if (!game.collision(obj.a, obj.x, obj.y + 1)) {
+        obj.y += 1
+        return false
+      }
+      else {
+        if (game.movable === obj)
+          game.movable = undefined
+
+        newones = game.copy(obj)
+        newones = newones.map(function (a) {
+          return that.mark(a[0], a[1])
+        })
+        if (onetrue(newones))
+          game.markedtime = game.ticks
+
+        return true
+      }
+    }
+
     return {
       add_message,
       display_messages,
       delmarked,
+      dropdown,
+
       blocks_index :  game.blocks_index,
       collision: game.collision,
       copy: game.copy,
       draw_chrome: game.draw_chrome,
       draw: game.draw,
-      dropdown: game.dropdown,
       falling : game.falling,
       flip: game.flip,
       game_over: game.game_over,

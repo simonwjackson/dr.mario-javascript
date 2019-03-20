@@ -10,7 +10,7 @@ import * as withContext from './withContext.js'
 import createContext from './createContext.js'
 import MakeGame from './Game.js'
 import MakeBlock from './Block.js'
-import MakeBotGame from './BotGame.js'
+import BotGame from './BotGame.js'
 
 const context = createContext({
   arena: document.getElementById('canvas').getContext('2d'),
@@ -110,7 +110,6 @@ const drawBlock = arena => (x, y, r, color, neighbor) => {
   arena.restore()
 }
 
-const BotGame = MakeBotGame(eq)
 const Block = MakeBlock(context, COLORS, drawBlock, N)
 const Game = MakeGame(context, Block, blocks, N, direct, onetrue, stop, display_text, wins, init, null, drawBlock, drawVirus, copy, flip2by2)
 
@@ -203,6 +202,7 @@ const keyBindings = e => {
 window.addEventListener('keypress', keyBindings, false)
 
 function copy_game_state(game_from, game_to) {
+  console.log(game_from, game_to)
   game_to.state = copy(game_from.state)
   game_to.initial = copy(game_from.initial)
   game_to.virus = game_from.virus; + 1
@@ -217,7 +217,6 @@ const initBlocks = _.compose(
 )
 
 function two_p_init(speed, level) {
-  let i
   context.set(['games'], [])
   context.get(['games']).push(new Game(10, 16, speed || 8, level || 10, 0))
   context.get(['games']).push(new Game(10, 16, speed || 8, level || 10, 1))
@@ -226,7 +225,6 @@ function two_p_init(speed, level) {
 }
 
 function single_init(speed, level) {
-  let i
   context.set(['games'], [])
   context.get(['games']).push(new Game(10, 16, speed || 8, level || 1, 0))
   initBlocks(10000)
@@ -234,8 +232,9 @@ function single_init(speed, level) {
 
 function single_with_bot_init(speed, level) {
   context.set(['games'], [])
-  context.get(['games']).push(new BotGame(new Game(10, 16, speed || 8, level || 10, 0), better_algo))
+  context.get(['games']).push(BotGame(new Game(10, 16, speed || 8, level || 10, 0), better_algo))
   context.get(['games']).push(new Game(10, 16, speed || 8, level || 10, 1))
+  console.log(context.get(['games']))
   copy_game_state(context.get(['games'])[0].game, context.get(['games'])[1])
   initBlocks(10000)
 }

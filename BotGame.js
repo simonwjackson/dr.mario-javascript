@@ -1,61 +1,69 @@
-export default (eq) => {
-  function BotGame (game, algo, botspeed) {
-    this.algo = algo
-    this.game = game
-    this.botspeed = botspeed || 5
-  }
+import { eq } from './utils.js'
 
-  BotGame.prototype.tick = function () {
+export default (game, algo, botspeed = 5) => {
+  let goal
+  let movable
+
+  const tick = () => {
     let t
-    this.game.tick()
+    game.tick()
     // if there is movable and no goal or if there is a movable but the bot's movable is old
-    if (this.game.movable && (!this.goal || this.movable !== this.game.movable)) {
-      t = this.algo(this.game.state, this.game.movable.a)
-      this.goal = {
+    if (game.movable && (!goal || movable !== game.movable)) {
+      t = algo(game.state, game.movable.a)
+      goal = {
         pos: t[0],
         state: t[1]
       }
-      this.movable = this.game.movable
+      movable = game.movable
     }
-    if (this.game.ticks % this.botspeed === 0)
-      this.chase_goal()
+    if (game.ticks % botspeed === 0)
+      chase_goal()
 
   }
 
-  BotGame.prototype.draw = function () {
-    this.game.draw()
+  const draw = () => {
+    game.draw()
   }
 
-  BotGame.prototype.add_message = function (text) {
-    this.game.messages.push(text)
+  const add_message = text => {
+    game.messages.push(text)
   }
 
-  BotGame.prototype.get_punish = function (colors_list) {
-    this.game.get_punish(colors_list)
+  const get_punish = (colors_list) => {
+    game.get_punish(colors_list)
   }
 
-  BotGame.prototype.chase_goal = function () {
-    if (!this.game.movable)
+  const chase_goal = () => {
+    if (!game.movable)
       return
 
-    if (!eq(this.goal.state, this.game.movable.a)) {
-      this.game.flip()
+    if (!eq(goal.state, game.movable.a)) {
+      game.flip()
       return
     }
 
-    if (this.goal.pos < this.game.movable.x) {
-      this.game.move('left')
+    if (goal.pos < game.movable.x) {
+      game.move('left')
       return
     }
-    if (this.goal.pos > this.game.movable.x) {
-      this.game.move('right')
+    if (goal.pos > game.movable.x) {
+      game.move('right')
       return
     }
-    if (!this.fast_drop) {
-      this.game.start_fastdrop()
+    if (typeof fast_drop === undefined) {
+      game.start_fastdrop()
       return
     }
   }
 
-  return BotGame
+  return {
+    goal,
+    movable,
+    tick,
+    draw,
+    add_message,
+    get_punish,
+    chase_goal,
+    game
+  }
 }

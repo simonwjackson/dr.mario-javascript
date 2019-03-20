@@ -217,22 +217,22 @@ const initBlocks = _.compose(
 
 function two_p_init(speed, level) {
   context.set(['games'], [])
-  context.get(['games']).push(new Game(10, 16, speed || 8, level || 10, 0))
-  context.get(['games']).push(new Game(10, 16, speed || 8, level || 10, 1))
+  context.get(['games']).push(Game(10, 16, speed || 8, level || 10, 0))
+  context.get(['games']).push(Game(10, 16, speed || 8, level || 10, 1))
   copy_game_state(context.get(['games'])[0], context.get(['games'])[1])
   initBlocks(10000)
 }
 
 function single_init(speed, level) {
   context.set(['games'], [])
-  context.get(['games']).push(new Game(10, 16, speed || 8, level || 1, 0))
+  context.get(['games']).push(Game(10, 16, speed || 8, level || 1, 0))
   initBlocks(10000)
 }
 
 function single_with_bot_init(speed = 20, level = 4) {
   context.set(['games'], [])
-  context.get(['games']).push(BotGame(new Game(10, 16, speed, level, 0), random_algo))
-  context.get(['games']).push(new Game(10, 16, speed, level, 1))
+  context.get(['games']).push(BotGame(Game(10, 16, speed, level, 0), random_algo))
+  context.get(['games']).push(Game(10, 16, speed, level, 1))
 
   copy_game_state(context.get(['games'])[0].game, context.get(['games'])[1])
   initBlocks(10000)

@@ -21,6 +21,7 @@ export default (context, Block, blocks, N, direct, onetrue, stop, display_text, 
   }
 
   Game.prototype.flip = function () {
+    console.log('prototype flip')
     this.movable = _.defaultTo({}, this.movable)
     const { x, y } = _.pickAll(['x', 'y'], this.movable)
 
@@ -362,20 +363,6 @@ export default (context, Block, blocks, N, direct, onetrue, stop, display_text, 
 
   }
 
-  Game.prototype.delmarked = function () {
-    let i, j, x, y, n
-    for (i = 0; i < this.x; i++)
-      for (j = 0; j < this.y; j++)
-        if (this.state[i][j] === -1) {
-          this.state[i][j] = 0
-          if (this.initial[i][j] === 1) {
-            this.initial[i][j] = 0
-            this.virus -= 1
-          }
-        }
-
-  }
-
   Game.prototype.dropdown = function (obj) {
     let newones, that = this
     if (!this.collision(obj.a, obj.x, obj.y + 1)) {
@@ -426,19 +413,6 @@ export default (context, Block, blocks, N, direct, onetrue, stop, display_text, 
 
   }
 
-  Game.prototype.display_messages = function () {
-    if (this.messages.length !== 0) {
-      context.get(['arena']).fillStyle = '#000000'
-      context.get(['arena']).font = '20pt helvetica'
-      context.get(['arena']).textAlign = 'center'
-      context.get(['arena']).fillText(this.messages.splice(0, 1), 100, 100)
-    }
-  }
-
-  Game.prototype.add_message = function (text) {
-    this.messages.push(text)
-  }
-
   Game.prototype.game_over = function () {
     let i = this.index
     let other = (i + 1) % 2
@@ -484,5 +458,74 @@ export default (context, Block, blocks, N, direct, onetrue, stop, display_text, 
     game_to.get_punish(colors_list)
   }
 
-  return Game
+  return (x, y, speed, level, index) => {
+    const game = new Game(x, y, speed, level, index)
+
+    const add_message = text => game.messages.push(text)
+
+    const display_messages = () => {
+      if (game.messages.length !== 0) {
+        const arena = context.get(['arena'])
+
+        arena.fillStyle = '#000000'
+        arena.font = '20pt helvetica'
+        arena.textAlign = 'center'
+        arena.fillText(game.messages.splice(0, 1), 100, 100)
+      }
+    }
+
+    const delmarked = () => {
+      let i, j
+
+      for (i = 0; i < game.x; i++)
+        for (j = 0; j < game.y; j++)
+          if (game.state[i][j] === -1) {
+            game.state[i][j] = 0
+            if (game.initial[i][j] === 1) {
+              game.initial[i][j] = 0
+              game.virus -= 1
+            }
+          }
+    }
+
+    return {
+      add_message,
+      display_messages,
+      delmarked,
+      blocks_index :  game.blocks_index,
+      collision: game.collision,
+      copy: game.copy,
+      draw_chrome: game.draw_chrome,
+      draw: game.draw,
+      dropdown: game.dropdown,
+      falling : game.falling,
+      flip: game.flip,
+      game_over: game.game_over,
+      get_punish: game.get_punish,
+      index : game.index,
+      init_state: game.init_state,
+      initial : game.initial,
+      line_test: game.line_test,
+      lines_in_this_move : game.lines_in_this_move,
+      live :  game.live,
+      mark_for_deletion: game.mark_for_deletion,
+      mark: game.mark,
+      messages : game.messages,
+      move: game.move,
+      neighbors : game.neighbors,
+      new_movable: game.new_movable,
+      next_punish: game.next_punish,
+      orphans: game.orphans,
+      punish_list : game.punish_list,
+      set_punish: game.set_punish,
+      speed : game.speed,
+      start_fastdrop: game.start_fastdrop,
+      state : game.state,
+      tick: game.tick,
+      ticks: game.ticks,
+      victory: game.victory,
+      x: game.x,
+      y: game.y,
+    }
+  }
 }

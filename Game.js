@@ -21,7 +21,6 @@ export default (context, Block, blocks, N, direct, onetrue, stop, display_text, 
   }
 
   Game.prototype.flip = function () {
-    console.log('prototype flip')
     this.movable = _.defaultTo({}, this.movable)
     const { x, y } = _.pickAll(['x', 'y'], this.movable)
 
@@ -65,7 +64,7 @@ export default (context, Block, blocks, N, direct, onetrue, stop, display_text, 
       this.falling[i].draw(context.get(['blocksize']))
 
     context.get(['arena']).strokeRect(0, 0, this.x * context.get(['blocksize']), this.y * context.get(['blocksize']))
-    this.draw_chrome()
+    this.drawChrome()
     this.display_messages()
   }
 
@@ -474,19 +473,21 @@ export default (context, Block, blocks, N, direct, onetrue, stop, display_text, 
           }
     }
 
-    const draw_chrome = function (level) {
+    const drawChrome = level => {
       const arena = context.get(['arena'])
+      const blocksize = context.get(['blocksize'])
+      const colors = context.get(['colors'])
 
       arena.fillStyle = '#000000'
       arena.font = '10pt helvetica'
       arena.textalign = 'left'
-      arena.fillText('Virus: ' + game.virus, 0, game.y * context.get(['blocksize']) + 20)
-      arena.fillText('Wins: ' + wins[game.index], 150, game.y * context.get(['blocksize']) + 20)
+      arena.fillText('Virus: ' + game.virus, 0, game.y * blocksize + 20)
+      arena.fillText('Wins: ' + wins[game.index], 150, game.y * blocksize + 20)
       arena.fillText('Next: ', 45, -10)
       arena.save()
-      arena.translate(context.get(['blocksize']) * (Math.floor(game.x / 2) - 1), -25)
-      drawBlock( arena )(0, 0, context.get(['blocksize']), context.get(['colors'])[blocks[game.blocks_index]], 2)
-      drawBlock( arena )(context.get(['blocksize']), 0, context.get(['blocksize']), context.get(['colors'])[blocks[game.blocks_index + 1]], 4)
+      arena.translate(blocksize * (Math.floor(game.x / 2) - 1), -25)
+      drawBlock( arena )(0, 0, blocksize, colors[blocks[game.blocks_index]], 2)
+      drawBlock( arena )(blocksize, 0, blocksize, colors[blocks[game.blocks_index + 1]], 4)
       context.get(['arena']).restore()
     }
 
@@ -494,7 +495,7 @@ export default (context, Block, blocks, N, direct, onetrue, stop, display_text, 
       add_message,
       display_messages,
       delmarked,
-      draw_chrome,
+      drawChrome,
 
       blocks_index :  game.blocks_index,
       collision: game.collision,
